@@ -9,7 +9,7 @@ from abc import *
 import itertools
 from torch.utils.data import Dataset
 
-from typing import NamedTuple, Sequence
+from typing import Any, NamedTuple, Sequence
 
 class Note(NamedTuple):
     pitch: int
@@ -40,11 +40,18 @@ class NotesRepr(ABC):
     def decode(self, tensor: torch.Tensor) -> Sequence[Note]: pass
 
 class NotesRepr1(NotesRepr):
-    """Encodes each note as a tensor [pitch, duration, start]"""
-    def __init__(self): pass
+    """Encodes each note as a tensor [pitch, duration, start, step]"""
+    def __init__(self, maxnotes=4096):
+        self.maxnotes = maxnotes
 
     def encode(self, notes: Sequence[Note]) -> torch.Tensor:
-        return torch.tensor(notes)
+        tensor = torch.tensor(notes[:self.maxnotes],dtype=torch.float32)
+        if tensor.shape[0] < self.maxnotes:
+            zeros = torch.zeros((self.maxnotes, 4), dtype=torch.float32)
+            zeros[0:tensor.shape[0],:] = tensor
+            return zeros
+        else:
+            return tensor
 
     def decode(self, tensor: torch.Tensor) -> Sequence[Note]:
         notes: list[Note] = []
@@ -61,7 +68,7 @@ class NotesRepr2(NotesRepr):
     def encode(self, notes: Sequence[Note]) -> torch.Tensor:
         # pitches go from [21, 108], which len = 88
         # hopefully 65536 is more than enough frames
-        tensor = torch.zeros(self.maxframes, 88)
+        tensor = torch.zeros((self.maxframes, 88), dtype=torch.float64)
         for note in notes:
             frame_index = int(note.start / self.step)
             if frame_index >= self.maxframes: break
@@ -116,7 +123,7 @@ class MaestroDataset(Dataset):
 class Cache(Dataset):
     def __init__(self, inner: Dataset):
         self.inner = inner
-        self.cache = dict()
+        self.cache: dict[int, Any] = dict()
     
     def __len__(self):
         return self.inner.__len__()

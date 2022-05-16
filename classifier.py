@@ -10,7 +10,7 @@ class MusicClassifier(nn.Module):
         super(MusicClassifier, self).__init__()
         self.linrelu = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(2048*88, 120),
+            nn.LazyLinear(120),
             nn.ReLU(),
             nn.Linear(120, 120),
             nn.ReLU(),
@@ -24,15 +24,15 @@ class MusicClassifier(nn.Module):
 device = "cuda" if torch.cuda.is_available() else "cpu"
 classifier = MusicClassifier().to(device)
 
-train_set = dataset.Cache(dataset.MaestroDataset("train", dataset.NotesRepr2(1/32, 2048)))
-test_set = dataset.MaestroDataset("test", dataset.NotesRepr2(1/32, 2048))
+train_set = dataset.Cache(dataset.MaestroDataset("train", dataset.NotesRepr1()))
+test_set = dataset.MaestroDataset("test", dataset.NotesRepr1())
 
-BATCH_SIZE = 4
+BATCH_SIZE = 16
 train_dataloader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
 test_dataloader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=True)
 
 print('starting training loop...')
-optimizer = torch.optim.SGD(classifier.parameters(), lr=1e-4)
+optimizer = torch.optim.SGD(classifier.parameters(), lr=5e-7)
 for idx, (x, y) in enumerate(train_dataloader):
     start_time = time.time()
     
@@ -41,7 +41,7 @@ for idx, (x, y) in enumerate(train_dataloader):
         y_onehot[i][j.item()] = 1
     x = torch.unsqueeze(x, 1)
     pred = classifier(x)
-    loss: torch.Tensor = nn.MSELoss()(pred, y_onehot)
+    loss: torch.Tensor = nn.CrossEntropyLoss()(pred, y_onehot)
     
     optimizer.zero_grad()
     loss.backward()
