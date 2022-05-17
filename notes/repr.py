@@ -1,35 +1,13 @@
-from numpy import float128
+from typing import *
+from abc import *
+
+from . import Note
+import itertools
+
 import torch
-import time
-import glob
+from torch.utils.data import Dataset
 import pandas # type: ignore
 import pretty_midi # type: ignore
-import numpy as np
-from abc import *
-import itertools
-from torch.utils.data import Dataset
-
-from typing import Any, NamedTuple, Sequence
-
-class Note(NamedTuple):
-    pitch: int
-    duration: float
-    start: float
-    step: float
-
-    def pitch_name(self):
-        pretty_midi.note_number_to_name(self.pitch)
-
-    def from_midi(notes: Sequence[pretty_midi.Note]) -> 'list[Note]':
-        out = []
-        notes = list(notes)
-        notes.sort(key=lambda note: note.start)
-
-        prev_start: float = 0.0
-        for note in notes:
-            out.append(Note(pitch=note.pitch, duration=note.end-note.start, start=note.start, step=note.start-prev_start))
-            prev_start = note.start
-        return out
 
 class NotesRepr(ABC):
     """Represents an encoding of list[Note] <-> Tensor"""
@@ -38,6 +16,9 @@ class NotesRepr(ABC):
 
     @abstractmethod
     def decode(self, tensor: torch.Tensor) -> Sequence[Note]: pass
+
+    @abstractmethod
+    def describe(self) -> str: pass
 
 class NotesRepr1(NotesRepr):
     """Encodes each note as a tensor [pitch, duration, start, step]"""
@@ -58,6 +39,9 @@ class NotesRepr1(NotesRepr):
         for row in tensor:
             notes.append(Note(*row))
         return notes
+
+    def describe(self) -> str:
+        return "NotesRepr1_max" + str(self.maxnotes)
 
 class NotesRepr2(NotesRepr):
     """Fills up frames"""
@@ -87,6 +71,52 @@ class NotesRepr2(NotesRepr):
                     notes.append(Note(pitch=pitch, duration=self.step, start=start, step=start - prev_note.start))
         return notes
 
+    def describe(self) -> str:
+        return "NotesRepr2_invstep%d_max%d" % (int(1/ self.step), self.maxframes)
+
+MAESTRO_PATH = "maestro-v2.0.0"
+
+def save_maestro(repr: NotesRepr):
+    df = pandas.read_csv(MAESTRO_PATH + "/maestro-v2.0.0.csv")
+#    composer_table: dict[str, int] = dict(zip(pandas.unique(df['canonical_composer']), itertools.count()))
+#    split_table = {"train": 0, "test": 1, "validation": 2}
+
+    pieces = []
+
+    for idx in range(len(df)):
+        row = df.iloc[[idx]]
+        
+        composer: str = row["canonical_composer"][idx]
+
+        split: str = row["split"][idx]
+
+        midi_file: str = row["midi_filename"][idx]
+        midi = pretty_midi.PrettyMIDI(MAESTRO_PATH + "/" + midi_file)
+        notes = Note.from_midi(midi.instruments[0].notes)
+        tensor = repr.encode(notes)
+
+        if idx % 32 == 0:
+            print("encoded %d / %d [%f%%]" % (idx, len(df), idx / len(df) * 100))
+
+        pieces.append((composer, split, tensor))
+
+    torch.save(pieces, "maestro-" + repr.describe() + ".pt")
+
+class SavedMaestroDataset(Dataset):
+    def __init__(self, file: str, split: str):
+        data = torch.load(file)
+        self.data = list(filter(lambda row: row[1] == split, data))
+
+        df = pandas.read_csv(MAESTRO_PATH + "/maestro-v2.0.0.csv")
+        self.composer_table: dict[str, int] = dict(zip(pandas.unique(df['canonical_composer']), itertools.count()))
+    
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, idx: int):
+        return self.data[idx][2], self.composer_table[self.data[idx][0]]
+
+"""
 class MaestroDataset(Dataset):
     _PATH = "maestro-v2.0.0"
     def __init__(self, split: str, repr: NotesRepr):
@@ -99,11 +129,11 @@ class MaestroDataset(Dataset):
     def __len__(self):
         return len(self.labels)
 
-    def get_midi(self, idx: int) -> pretty_midi.PrettyMIDI:
-        data = self.labels.iloc[[idx]]
-        midi_file: str = data['midi_filename'][idx]
-        midi = pretty_midi.PrettyMIDI(MaestroDataset._PATH + "/" + midi_file)
-        return midi
+#    def get_midi(self, idx: int) -> pretty_midi.PrettyMIDI:
+#        data = self.labels.iloc[[idx]]
+#        midi_file: str = data['midi_filename'][idx]
+#        midi = pretty_midi.PrettyMIDI(MaestroDataset._PATH + "/" + midi_file)
+#        return midi
 
     def __getitem__(self, idx: int):
         data = self.labels.iloc[[idx]]
@@ -133,3 +163,4 @@ class Cache(Dataset):
             return self.cache[idx]
         self.cache[idx] = self.inner.__getitem__(idx)
         return self.cache[idx]
+"""
