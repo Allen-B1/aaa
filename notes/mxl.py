@@ -14,7 +14,7 @@ def parse_note(elem: ET.Element, divisions: float) -> Note:
 
     duration_int = int(elem.find("duration").text)  # type: ignore
     duration = duration_int / divisions
-    return Note(pitch=pitch, duration=duration)
+    return Note(pitch=pitch-21, duration=duration)
 
 
 def parse_measure(elem: ET.Element, divisions: int) -> Tuple[Measure, int]:

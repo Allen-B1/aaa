@@ -4,17 +4,20 @@ import torch
 import math
 
 def to_tensor(measure: Measure) -> torch.Tensor:
-    tensor = torch.zeros((48, 88))
+    tensor = torch.zeros((49, 88))
     for position, notes in measure.notes.items():
-        frame_idx = int(position * 48 / 4)
+        frame_idx = int(position * 48 / measure.beats)
         for note in notes:
             tensor[frame_idx][note.pitch] = note.duration
+    tensor[48][0] = measure.beats
     return tensor
 
 def from_tensor(tensor: torch.Tensor) -> Measure:
+    beats = round(tensor[48][0].item())
+
     notes: Dict[float, List[Note]] = dict()
-    for frame_idx, row in enumerate(tensor):
+    for frame_idx, row in enumerate(tensor[:48]):
         for pitch in row.nonzero():
-            notes[frame_idx*4 / 48] = notes.get(frame_idx*4/48, [])
-            notes[frame_idx*4/48].append(Note(pitch, row[pitch]))
-    return Measure(notes, beats=math.nan) # type: ignore
+            notes[frame_idx*beats / 48] = notes.get(frame_idx*beats/48, [])
+            notes[frame_idx*beats/48].append(Note(pitch.item(), duration=row[pitch]))
+    return Measure(notes, beats=beats) # type: ignore
