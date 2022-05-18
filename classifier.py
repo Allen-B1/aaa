@@ -25,7 +25,7 @@ class Classifier(torch.nn.Module):
         x = self.dense3(x)
         return x
     
-data = list(preprocess.load("preprocessed-all.pt"))
+data = list(preprocess.load("saves/preprocessed-all.pt"))
 
 # split into measures
 data = [(a, b, c, measure) for (a, b, c, measures) in data for measure in measures]

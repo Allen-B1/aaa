@@ -27,7 +27,7 @@ def preprocess(out_file: str, n_measures: Union[int, Literal["all"]]):
     torch.save(items, out_file)
 
 if __name__ == "__main__":
-    preprocess("preprocessed-all.pt", "all")
+    preprocess("saves/preprocessed-all.pt", "all")
 
 def load(file: str) -> Sequence[Tuple[str, str, int, torch.Tensor]]:
     return torch.load(file)
