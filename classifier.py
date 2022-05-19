@@ -12,9 +12,9 @@ class Classifier(torch.nn.Module):
         torch.nn.Module.__init__(self)
 #        self.conv1 = torch.nn.Conv2d(1, 2, (4, 22))
 #        self.pool1 = torch.nn.MaxPool2d((2, 2), (2, 2))
-        self.dense1 = torch.nn.LazyLinear(100)
-        self.dense2 = torch.nn.Linear(100, 100)
-        self.dense3 = torch.nn.Linear(100, 19)
+        self.dense1 = torch.nn.LazyLinear(120)
+        self.dense2 = torch.nn.Linear(120, 120)
+        self.dense3 = torch.nn.Linear(120, 19)
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 #        x = self.conv1(x)
@@ -23,8 +23,8 @@ class Classifier(torch.nn.Module):
         x = F.relu(self.dense1(x))
         x = F.relu(self.dense2(x))
         x = self.dense3(x)
-        return x
-    
+        return x 
+
 data = list(preprocess.load("saves/preprocessed-all.pt"))
 
 # split into measures
@@ -44,7 +44,16 @@ test_data = data[int(len(data)*7/8):]
 print("train measures: %d | test measures: %d" % (len(train_data), len(test_data)))
 
 classifier = Classifier()
-optimizer = torch.optim.SGD(classifier.parameters(), lr=1e-7)
+optimizer = torch.optim.Adam(classifier.parameters(), lr=1e-3)
+
+def accuracy_on(data: List[Tuple[str, str, int, torch.Tensor]]) -> float:
+    correct = 0
+    for sample_num, (name, composer, composer_idx, measure) in enumerate(data):
+        pred = classifier(measure.unsqueeze(0))
+        correct += int(torch.argmax(pred).item() == composer_idx)
+    return correct / len(data)
+
+loss_acc = []
 for sample_num, (name, composer, composer_idx, measure) in enumerate(train_data):
     x_tensor = measure.unsqueeze(0)
     y_tensor = F.one_hot(torch.tensor(composer_idx), n_composers).to(torch.float32)
@@ -58,14 +67,33 @@ for sample_num, (name, composer, composer_idx, measure) in enumerate(train_data)
     optimizer.step()
 
     if sample_num % 100 == 0 or sample_num == len(train_data) - 1 :
-        print("[%d] loss: %f" % (sample_num, loss), end = "\n" if sample_num % 5000 == 0 or sample_num == len(train_data) - 1 else '\r')
+        # find accuracy on 256 samples of test set
+        acc = accuracy_on(test_data[:256])
+        loss_acc.append((loss.item(), acc*100))
+        print("[%d] loss: %f | acc: %f%%" % (sample_num, loss, acc * 100),
+            end = "\n" if sample_num % 5000 == 0 or sample_num == len(train_data) - 1 else '\r')
 
-def accuracy_on(data: List[Tuple[str, str, int, torch.Tensor]], label: str, color: str):
+# test accuracy on data set
+def print_accuracy_on(data: List[Tuple[str, str, int, torch.Tensor]], label: str, color: str):
     correct = 0
     for sample_num, (name, composer, composer_idx, measure) in enumerate(data):
         pred = classifier(measure.unsqueeze(0))
         correct += int(torch.argmax(pred).item() == composer_idx)
     print("accuracy on %s data: %s%d/%d [%f%%]\033[0m" % (label, color, correct, len(data), correct/len(data)*100))
 
-accuracy_on(test_data, "test", "\033[1m\033[34m")
-accuracy_on(train_data, "train", "")
+print_accuracy_on(test_data, "test", "\033[1m\033[34m")
+print_accuracy_on(train_data, "train", "")
+
+# graph accuracy/loss vs epochs
+import matplotlib.pyplot as plt
+plt.figure()
+#plt.title(CLASSIFIER_DESCRIPTION)
+plt.xlabel("Hundreds of Epochs")
+plt.ylabel("Loss")
+plt.plot(list(map(lambda x: x[0], loss_acc)))
+plt.figure()
+#plt.title(CLASSIFIER_DESCRIPTION)
+plt.xlabel("Hundreds of Epochs")
+plt.ylabel("Accuracy")
+plt.plot(list(map(lambda x: x[1], loss_acc)))
+plt.show()
