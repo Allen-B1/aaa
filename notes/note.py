@@ -10,6 +10,7 @@ class Note(NamedTuple):
         return pretty_midi.note_number_to_name(self.pitch + 21)
 
     def __repr__(self) -> str:
+        assert type(self.duration) == float
         return "Note(\"%s\", pitch=%s, duration=%f)" % (self.pitch_name(), repr(self.pitch), self.duration)
 
 

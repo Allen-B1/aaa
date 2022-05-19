@@ -13,11 +13,11 @@ def to_tensor(measure: Measure) -> torch.Tensor:
     return tensor
 
 def from_tensor(tensor: torch.Tensor) -> Measure:
-    beats = round(tensor[48][0].item())
+    beats = float(round(tensor[48][0].item()))
 
     notes: Dict[float, List[Note]] = dict()
     for frame_idx, row in enumerate(tensor[:48]):
         for pitch in row.nonzero():
             notes[frame_idx*beats / 48] = notes.get(frame_idx*beats/48, [])
-            notes[frame_idx*beats/48].append(Note(pitch.item(), duration=row[pitch]))
+            notes[frame_idx*beats/48].append(Note(int(pitch.item()), duration=row[pitch].item()))
     return Measure(notes, beats=beats) # type: ignore
