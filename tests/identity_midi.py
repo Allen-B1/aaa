@@ -6,8 +6,11 @@ sys.path.append(".")
 
 from notes import mxl, midi, tensor
 from notes.note import Measure, Part
+import random, glob
+import os.path
 
-FILE = "datasets/midide/debussy/deb_prel.musicxml"
+FILES = glob.glob("datasets/midide/*/*.musicxml")
+FILE = random.choice(FILES)
 
 parts = mxl.parse_file(FILE)
 recreated_measures: List[Measure] = []
@@ -17,4 +20,4 @@ for measure in parts[0].measures:
 
 part = Part(recreated_measures, 'Piano')
 pm = midi.to_midi([part])
-pm.write("tests/output/deb_prel.mid")
+pm.write("tests/output/" + os.path.splitext(os.path.basename(FILE))[0] + ".mid")
