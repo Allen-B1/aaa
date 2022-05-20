@@ -84,16 +84,16 @@ def print_accuracy_on(data: List[Tuple[str, str, int, torch.Tensor]], label: str
 print_accuracy_on(test_data, "test", "\033[1m\033[34m")
 print_accuracy_on(train_data, "train", "")
 
-# graph accuracy/loss vs epochs
+# graph accuracy/loss vs iteration
 import matplotlib.pyplot as plt
 plt.figure()
 #plt.title(CLASSIFIER_DESCRIPTION)
-plt.xlabel("Hundreds of Epochs")
+plt.xlabel("Hundreds of Iterations")
 plt.ylabel("Loss")
 plt.plot(list(map(lambda x: x[0], loss_acc)))
 plt.figure()
 #plt.title(CLASSIFIER_DESCRIPTION)
-plt.xlabel("Hundreds of Epochs")
+plt.xlabel("Hundreds of Iterations")
 plt.ylabel("Accuracy")
 plt.plot(list(map(lambda x: x[1], loss_acc)))
 plt.show()
