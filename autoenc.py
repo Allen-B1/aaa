@@ -6,7 +6,7 @@ import argparse
 import random
 import time
 
-SAVE_FOLDER = "saves/autoenc/trial-2"
+SAVE_FOLDER = "saves/autoenc/trial-3"
 
 class AutoEncoder(nn.Module):
     def __init__(self):
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     parser.add_argument("--out-label", type=str, help="Model label to write to", required=True)
     args = parser.parse_args()
 
-    data = preprocess.load("saves/preprocessed-all.pt")
+    data = preprocess.load("saves/preprocessed.pt")
     data = [(a, b, c, measure.to("cuda" if torch.cuda.is_available() else "cpu")) for (a, b, c, measures) in data for measure in measures]
 
     autoenc = AutoEncoder().to("cuda" if torch.cuda.is_available() else "cpu")
@@ -42,9 +42,15 @@ if __name__ == "__main__":
     if args.in_label is not None:
         save = torch.load(SAVE_FOLDER + "/" + args.in_label + ".pt")
         autoenc.load_state_dict(save["model"])
-        epoch_num: int = save["epoch"]
+        epoch_num = save["epoch"]
         print("Loading: " + args.in_label)
         print("Epoch: " + str(epoch_num))
+    else:
+        # initialize weights to 0
+        def init_weights(m):
+            m.weight.data.fill_(0.01)
+            m.bias.data.fill_(0.01)
+        autoenc.apply(init_weights)
 
     start_time = time.perf_counter()
 
