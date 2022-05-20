@@ -2,23 +2,30 @@ import random
 import pretty_midi
 
 from typing import Sequence
-from .note import Part
+from .note import Piece
 
-def to_midi(parts: Sequence[Part], tempo: int=120) -> pretty_midi.PrettyMIDI:
-    midi = pretty_midi.PrettyMIDI()
+def to_midi(piece: Piece) -> pretty_midi.PrettyMIDI:
     # (beats/min * min/sec)^-1
-    sec_per_beats = 1/(tempo * (1/60))
-    for part in parts:
-        program = pretty_midi.instrument_name_to_program('Acoustic Grand Piano')
-        instrument = pretty_midi.Instrument(program=program)
-        current_time = 0.0
-        for measure in part.measures:
-            midi.time_signature_changes.append(pretty_midi.TimeSignature(int(measure.beats), 4, current_time))
-            for position, notes in measure.notes.items():
-                position_time = current_time + position*sec_per_beats
-                for note in notes:
-                    instrument.notes.append(pretty_midi.Note(velocity=96,pitch=note.pitch+21,start=position_time,end=position_time + note.duration*sec_per_beats))
 
-            current_time += measure.beats * sec_per_beats
+    midi = pretty_midi.PrettyMIDI(initial_tempo=piece.measures[0].tempo)
+    for part in piece.parts:
+        program = pretty_midi.instrument_name_to_program('Acoustic Grand Piano' if part.lower() == 'piano' else part)
+        instrument = pretty_midi.Instrument(program=program)
         midi.instruments.append(instrument)
+
+    current_time = 0.0
+    for measure in piece.measures:
+        tempo = measure.tempo
+        sec_per_beats = 1/(tempo * (1/60))
+        midi.time_signature_changes.append(pretty_midi.TimeSignature(measure.time_sig[0], measure.time_sig[1], current_time))
+        midi._tick_scales.append((midi.time_to_tick(current_time), 60.0/(tempo*midi.resolution)))
+        midi._update_tick_to_time(midi.time_to_tick(current_time*2))
+        for part_id, part_notes in enumerate(measure.notes):
+            for position, notes in part_notes.items():
+                note_time = current_time + position*sec_per_beats
+                for note in notes:
+                    midi.instruments[part_id].notes.append(pretty_midi.Note(velocity=96,pitch=note.pitch+21,start=note_time,end=note_time + note.duration*sec_per_beats))
+
+        current_time += measure.beats() * sec_per_beats
+
     return midi

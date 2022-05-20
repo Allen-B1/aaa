@@ -1,8 +1,8 @@
+from collections import defaultdict
 import xml.etree.ElementTree as ET
-from typing import List, Tuple, Sequence, Dict
-from .note import Note, Measure, Part
+from typing import DefaultDict, List, Optional, Tuple, Sequence, Dict
+from .note import Note, Measure, NoteList, Piece
 import pretty_midi  # type: ignore
-
 
 def parse_note(elem: ET.Element, divisions: float) -> Note:
     pitch_elem = elem.find("pitch")
@@ -17,12 +17,15 @@ def parse_note(elem: ET.Element, divisions: float) -> Note:
     return Note(pitch=pitch-21, duration=duration)
 
 
-def parse_measure(elem: ET.Element, divisions: int) -> Tuple[Measure, int]:
+def parse_measure(elem: ET.Element, time_sig: Tuple[int, int], divisions: int) -> Tuple[NoteList, Tuple[int, int], Optional[float], Optional[float], int]:
     divisions = int(divisions if elem.find("attributes/divisions") is None
-                    else elem.find("attributes/divisions").text)  # type: ignore
+                    else elem.find("attributes/divisions").text) # type: ignore
+
+    time_sig = (time_sig if elem.find("attributes/time") is None 
+                    else (int(elem.find("attributes/time/beats").text), int(elem.find("attributes/time/beat-type").text))) # type: ignore
+
     notes: Dict[float, List[Note]] = dict()
     position = 0.0
-    max_position = 0.0
     prev_duration = 0.0
     for child_elem in elem:
         # create note object
@@ -48,30 +51,56 @@ def parse_measure(elem: ET.Element, divisions: int) -> Tuple[Measure, int]:
                 position -= duration
             else:
                 position += duration
-        if position > max_position:
-            max_position = position
-    return Measure(notes, beats=max_position), divisions
 
+    tempos = elem.findall("direction/sound[@tempo]")
+    first_tempo: Optional[float] = None
+    final_tempo: Optional[float] = None
+    if len(tempos) != 0:
+        first_tempo = float(tempos[0].attrib['tempo']) # type: ignore
+        final_tempo = float(tempos[len(tempos) - 1].attrib['tempo']) # type: ignore
+    
+    return notes, time_sig, first_tempo, final_tempo, divisions 
 
-def parse_part(elem: ET.Element) -> Part:
-    measures_elem = elem.findall("measure")
+def parse_piece(root: ET.Element) -> Piece:
+    part_elems = root.findall("part")
+
+    # measure num => (part id => notes)
+    note_lists: DefaultDict[int, Dict[int, NoteList]] = defaultdict(lambda: dict())
+    time_sigs: Dict[int, Tuple[int, int]] = dict()
+    first_tempos: Dict[int, float] = dict()
+    final_tempos: Dict[int, float] = dict()
+
+    for part_id, part_elem in enumerate(part_elems):
+        measure_elems = part_elem.findall("measure")
+        time_sig = (0, 0)
+        divisions = 0
+        for measure_elem in measure_elems:
+            measure_num = int(measure_elem.attrib['number']) - 1 # starts at 1
+            note_list, time_sig, first_tempo, final_tempo, divisions = parse_measure(measure_elem, time_sig, divisions)
+            note_lists[measure_num][part_id] = note_list
+            time_sigs[measure_num] = time_sig
+            if first_tempo is not None:
+                first_tempos[measure_num] = first_tempo
+            if final_tempo is not None:
+                final_tempos[measure_num] = final_tempo
+    
+    num_measures = max(note_lists.keys())
+    tempo = 0.0
     measures: List[Measure] = []
-    divisions = 0
-    for measure_elem in measures_elem:
-        measure, divisions = parse_measure(measure_elem, divisions)
+    for measure_num in range(num_measures):
+        if measure_num in first_tempos:
+            tempo = first_tempos[measure_num]
+
+        note_lists_seq: List[NoteList] = [note_lists[measure_num][part_id] for part_id in range(len(part_elems))]
+        measure = Measure(note_lists_seq, time_sigs[measure_num], tempo)
         measures.append(measure)
-    return Part(measures=measures, instrument="piano")
+    
 
+    part_list: List[str] = [root.find("part-list/score-part[@id=\"" + part_elem.attrib['id'] + "\"]/score-instrument/instrument-name").text for part_elem in part_elems] # type: ignore
 
-def parse_tree(root: ET.Element) -> Sequence[Part]:
-    parts: List[Part] = []
+    return Piece(measures, parts=part_list)
+    
 
-    parts_elem = root.findall("part")
-    for part in parts_elem:
-        parts.append(parse_part(part))
-    return parts
-
-
-def parse_file(filename: str) -> Sequence[Part]:
+def parse_file(filename: str) -> Piece:
     tree = ET.parse(filename)
-    return parse_tree(tree.getroot())
+    return parse_piece(tree.getroot())

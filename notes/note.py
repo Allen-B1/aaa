@@ -1,5 +1,4 @@
-from typing import NamedTuple, Dict, Sequence
-
+from typing import NamedTuple, Mapping, Sequence, Tuple
 
 class Note(NamedTuple):
     pitch: int       # number; MIDI pitch - 21; [0, 88)
@@ -13,12 +12,17 @@ class Note(NamedTuple):
         assert type(self.duration) == float
         return "Note(\"%s\", pitch=%s, duration=%f)" % (self.pitch_name(), repr(self.pitch), self.duration)
 
+NoteList = Mapping[float, Sequence[Note]]
 
 class Measure(NamedTuple):
-    notes: Dict[float, Sequence[Note]]
-    beats: float
+    notes: Sequence[NoteList]
+    time_sig: Tuple[float, float] # 6/8
+    tempo: float # bpm
+
+    def beats(self) -> float:
+        return self.time_sig[0] / self.time_sig[1] * 4
 
 
-class Part(NamedTuple):
+class Piece(NamedTuple):
     measures: Sequence[Measure]
-    instrument: str
+    parts: Sequence[str]
