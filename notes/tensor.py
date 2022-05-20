@@ -6,7 +6,7 @@ def to_tensor(measure: Measure) -> torch.Tensor:
     tensor = torch.zeros((49, 88))
     for notelist in measure.notes:
         for position, notes in notelist.items():
-            frame_idx = int(position * 48 / measure.beats())
+            frame_idx = int(round(position * 48 / measure.beats()))
             for note in notes:
                 tensor[frame_idx][note.pitch] = note.duration
     tensor[48][0] = measure.time_sig[0]

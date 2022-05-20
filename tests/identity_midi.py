@@ -11,7 +11,7 @@ import os.path
 
 FILES = glob.glob("datasets/midide/*/*.musicxml")
 #FILE = random.choice(FILES)
-FILE = "datasets/midide/bach/bach_847.musicxml"
+FILE = "datasets/midide/debussy/deb_prel.musicxml"
 
 piece = mxl.parse_file(FILE)
 recreated_measures: List[Measure] = []

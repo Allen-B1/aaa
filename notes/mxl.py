@@ -4,7 +4,11 @@ from typing import DefaultDict, List, Optional, Tuple, Sequence, Dict
 from .note import Note, Measure, NoteList, Piece
 import pretty_midi  # type: ignore
 
-def parse_note(elem: ET.Element, divisions: float) -> Note:
+def parse_note(elem: ET.Element, divisions: float) -> Tuple[Note, Tuple[bool, bool]]:
+    has_start_tie = elem.find("tie[@type='start']") is not None
+    has_end_tie = elem.find("tie[@type='stop']") is not None
+        
+
     pitch_elem = elem.find("pitch")
     step = pitch_elem.find("step").text  # type: ignore
     octave = pitch_elem.find("octave").text  # type: ignore
@@ -14,7 +18,7 @@ def parse_note(elem: ET.Element, divisions: float) -> Note:
 
     duration_int = int(elem.find("duration").text)  # type: ignore
     duration = duration_int / divisions
-    return Note(pitch=pitch-21, duration=duration)
+    return Note(pitch=pitch-21, duration=duration), (has_start_tie, has_end_tie)
 
 
 def parse_measure(elem: ET.Element, time_sig: Tuple[int, int], divisions: int) -> Tuple[NoteList, Tuple[int, int], Optional[float], Optional[float], int]:
@@ -24,7 +28,8 @@ def parse_measure(elem: ET.Element, time_sig: Tuple[int, int], divisions: int) -
     time_sig = (time_sig if elem.find("attributes/time") is None 
                     else (int(elem.find("attributes/time/beats").text), int(elem.find("attributes/time/beat-type").text))) # type: ignore
 
-    notes: Dict[float, List[Note]] = dict()
+    # (note, has_start_tie)
+    notes: Dict[float, List[Tuple[Note, bool]]] = dict()
     position = 0.0
     prev_duration = 0.0
     for child_elem in elem:
@@ -32,14 +37,21 @@ def parse_measure(elem: ET.Element, time_sig: Tuple[int, int], divisions: int) -
         # TODO: ties
         if child_elem.tag == "note":
             if child_elem.find("pitch") is not None:
-                note = parse_note(child_elem, divisions)
+                note, tie_info = parse_note(child_elem, divisions)
 
                 note_position = position
                 if child_elem.find("chord") is not None:
                     note_position = position - prev_duration
 
-                notes[note_position] = notes.get(note_position, [])
-                notes[note_position].append(note)
+                if tie_info[1]: # attach to existing note
+                    for other_position, other_notes in notes.items():
+                        for other_idx, (other_note, has_start_tie) in enumerate(other_notes):
+                            if has_start_tie and other_note.pitch == note.pitch and other_position + other_note.duration == note_position:
+                                other_notes[other_idx] = (Note(other_note.pitch, other_note.duration + note.duration), tie_info[0])
+                                break
+                else: # no tie, add note
+                    notes[note_position] = notes.get(note_position, [])
+                    notes[note_position].append((note, tie_info[0]))
             duration_int = int(child_elem.find("duration").text)  # type: ignore
             prev_duration = duration_int / divisions  # type: ignore
 
@@ -59,7 +71,7 @@ def parse_measure(elem: ET.Element, time_sig: Tuple[int, int], divisions: int) -
         first_tempo = float(tempos[0].attrib['tempo']) # type: ignore
         final_tempo = float(tempos[len(tempos) - 1].attrib['tempo']) # type: ignore
     
-    return notes, time_sig, first_tempo, final_tempo, divisions 
+    return dict((k, [note for (note, _) in v]) for k, v in notes.items()), time_sig, first_tempo, final_tempo, divisions 
 
 def parse_piece(root: ET.Element) -> Piece:
     part_elems = root.findall("part")
