@@ -1,3 +1,4 @@
+from typing import List
 import urllib.request
 import http.client
 import re
@@ -14,7 +15,7 @@ if not args.skip_download:
     resp: http.client.HTTPResponse = urllib.request.urlopen("http://www.piano-midi.de/")
     body = resp.read().decode('utf8')
     composers = re.findall(r"<a href=\"(\w+).htm\" title=\"[\w\s]+ Midi and Audio Files\">", body)
-    composers_zip: 'list[str]' = []
+    composers_zip: List[str] = []
     for id in composers:
         resp = urllib.request.urlopen("http://www.piano-midi.de/" + id + ".htm")
         body = resp.read().decode('utf8')
