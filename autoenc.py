@@ -35,9 +35,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     data = preprocess.load("saves/preprocessed-all.pt")
-    data = [(a, b, c, measure) for (a, b, c, measures) in data for measure in measures]
+    data = [(a, b, c, measure.to("cuda" if torch.cuda.is_available() else "cpu")) for (a, b, c, measures) in data for measure in measures]
 
-    autoenc = AutoEncoder()
+    autoenc = AutoEncoder().to("cuda" if torch.cuda.is_available() else "cpu")
     epoch_num: int = 0 # number of epochs, before the process
     if args.in_label is not None:
         save = torch.load(SAVE_FOLDER + "/" + args.in_label + ".pt")
@@ -73,5 +73,5 @@ if __name__ == "__main__":
 
     print("\n\033[32m\033[1mFinished training %d epochs in %fs\033[0m" % (args.epochs, time_elapsed))
     print("Epoch: " + str(epoch_num))
-    torch.save({"model": autoenc.state_dict(), "epoch": epoch_num}, SAVE_FOLDER + "/" + args.out_label)
+    torch.save({"model": autoenc.state_dict(), "epoch": epoch_num}, SAVE_FOLDER + "/" + args.out_label + ".pt")
     print("Saving to: " + args.out_label + ".pt")

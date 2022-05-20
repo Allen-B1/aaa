@@ -8,7 +8,7 @@ import os.path
 import torch
 import random
 
-MODEL = "saves/autoenc/trial-2/model1.pt"
+MODEL = "saves/autoenc/trial-2/model4.pt"
 SAVE_FOLDER = "saves/autoenc/trial-2"
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
@@ -20,6 +20,14 @@ model = autoenc.AutoEncoder()
 save = torch.load(MODEL)
 model.load_state_dict(save["model"])
 epoch: int = save["epoch"]
+
+try:
+    os.makedirs(SAVE_FOLDER + "/e%d/rand" % epoch)
+except FileExistsError: pass
+try:
+    os.makedirs(SAVE_FOLDER + "/e%d/from" % epoch)
+except FileExistsError: pass
+
 if args.action == "gen-file":
     if args.file is None:
         print("--file must be specified")    
