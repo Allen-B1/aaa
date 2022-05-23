@@ -8,8 +8,8 @@ import os.path
 import torch
 import random
 
-MODEL = "saves/autoenc/trial-3/model1.pt"
-SAVE_FOLDER = "saves/autoenc/trial-3"
+MODEL = "saves/autoenc/trial-4/model1.pt"
+SAVE_FOLDER = "saves/autoenc/trial-4"
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
 parser.add_argument("action", metavar="ACTION", type=str, help="Action to take [gen-file, gen-rand]")

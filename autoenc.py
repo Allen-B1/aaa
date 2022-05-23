@@ -6,22 +6,22 @@ import argparse
 import random
 import time
 
-SAVE_FOLDER = "saves/autoenc/trial-3"
+SAVE_FOLDER = "saves/autoenc/trial-4"
 
 class AutoEncoder(nn.Module):
     def __init__(self):
         nn.Module.__init__(self)
         self.encoder = nn.Sequential(
-            nn.Linear(49 * 88, 384),
+            nn.Linear(49 * 88, 512),
             nn.ReLU(),
-            nn.Linear(384, 120),
+            nn.Linear(512, 120),
         )
 
         self.decoder = nn.Sequential(
             nn.ReLU(),
-            nn.Linear(120, 384),
+            nn.Linear(120, 512),
             nn.ReLU(),
-            nn.Linear(384, 49 * 88)
+            nn.Linear(512, 49 * 88)
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     start_time = time.perf_counter()
 
-    optimizer = torch.optim.Adam(autoenc.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(autoenc.parameters(), lr=1e-2)
     for i in range(args.epochs):
         random.shuffle(data)
         losses = []
