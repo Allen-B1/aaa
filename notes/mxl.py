@@ -35,7 +35,7 @@ def parse_measure(elem: ET.Element, time_sig: Tuple[int, int], divisions: int) -
     for child_elem in elem:
         # create note object
         # TODO: ties
-        if child_elem.tag == "note":
+        if child_elem.tag == "note" and child_elem.find("grace") is None:
             if child_elem.find("pitch") is not None:
                 note, tie_info = parse_note(child_elem, divisions)
 
@@ -56,7 +56,7 @@ def parse_measure(elem: ET.Element, time_sig: Tuple[int, int], divisions: int) -
             prev_duration = duration_int / divisions  # type: ignore
 
         # increase position
-        if child_elem.tag in ("note", "forward", "backup") and child_elem.find("chord") is None:
+        if child_elem.tag in ("note", "forward", "backup") and child_elem.find("chord") is None  and child_elem.find("grace") is None:
             duration_int = int(child_elem.find("duration").text)  # type: ignore
             duration = duration_int / divisions
             if child_elem.tag == "backup":

@@ -101,5 +101,4 @@ if __name__ == "__main__":
     df = pandas.DataFrame({"epoch": epochs, "loss": losses})
     multi_csv_file = "/stats/epochs-" + str(epoch_num - args.epochs + 1) + "-to-" + str(epoch_num) + ".csv"
     df.to_csv(SAVE_FOLDER + multi_csv_file)
-    print("Saved multistats file to " + multi_csv_file)
     

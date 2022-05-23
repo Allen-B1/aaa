@@ -1,4 +1,5 @@
 import argparse
+from posixpath import basename
 from typing import List
 import notes.mxl, notes.tensor, notes.midi
 from notes.note import Measure, Piece
@@ -10,7 +11,7 @@ import random
 import pandas
 import matplotlib.pyplot as plt
 
-MODEL = "saves/autoenc/trial-6/model-50.pt"
+MODEL = "saves/autoenc/trial-6/model-100.pt"
 SAVE_FOLDER = "saves/autoenc/trial-6"
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
@@ -82,7 +83,14 @@ elif args.action == "show-code":
             code = model.get_code(notes.tensor.to_tensor(measure))
             codes.append([codeitem.item() for codeitem in code])
         df = pandas.DataFrame(codes)
-        print(df)
-
+        filepath = SAVE_FOLDER + "/e" + str(epoch) + "/codes/" + basename(args.file) + ".csv"
+        df.to_csv(filepath)
+        print("Saved to: " + filepath)
+        unused = set(range(0, 120))
+        for code in codes:
+            unused_tmp = set(idx for idx, codeitem in enumerate(code) if codeitem == 0)
+            unused = unused.intersection(unused_tmp)
+        print("unused: indexes", unused)
+        print("unused: %d/%d"% (len(unused), 120))
 else:
     print("Unknown action: " + args.action)
