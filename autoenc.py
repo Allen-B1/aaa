@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
@@ -55,10 +55,11 @@ if __name__ == "__main__":
     start_time = time.perf_counter()
 
     optimizer = torch.optim.Adam(autoenc.parameters(), lr=1e-4)
-    losses: List[float] = []
+    losses_within_epoch: List[float] = []
+    losses_epochs: List[Tuple[int, float]] = []
     for i in range(args.epochs):
         random.shuffle(data)
-        losses = []
+        losses_within_epoch = []
         for iter_num, (name, composer, c, measure) in enumerate(data):
             pred = autoenc(measure)
             pred = torch.reshape(pred, (49, 88))
@@ -68,10 +69,13 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
 
-            losses.append(loss.item())
+            losses_within_epoch.append(loss.item())
 
             if iter_num % 100 == 0:
                 print("[E%d][%d] loss: %f" % (epoch_num + 1, iter_num, loss), end="\n" if iter_num % 1000 == 0 else '\r')
+
+        avg_loss = sum(losses_within_epoch) / len(losses_within_epoch)
+        losses_epochs.append((epoch_num + 1, avg_loss))
 
         epoch_num += 1
 
@@ -85,6 +89,14 @@ if __name__ == "__main__":
 
     # save stats file
     import pandas
-    df = pandas.DataFrame({"loss": losses})
+    df = pandas.DataFrame({"loss": losses_within_epoch})
     df.to_csv(SAVE_FOLDER + "/stats/epoch-" + str(epoch_num) + ".csv")
     print("Saved stats file in stats/epoch-" + str(epoch_num) + ".csv")
+
+    epochs = list(map(lambda t: t[0], losses_epochs))
+    losses = list(map(lambda t: t[1], losses_epochs))
+    df = pandas.DataFrame({"epoch": epochs, "loss": losses})
+    multi_csv_file = "/stats/epochs-" + str(epoch_num - args.epochs + 1) + "-to-" + str(epoch_num) + ".csv"
+    df.to_csv(SAVE_FOLDER + multi_csv_file)
+    print("Saved multistats file to " + multi_csv_file)
+    
