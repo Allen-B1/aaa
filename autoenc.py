@@ -51,13 +51,6 @@ if __name__ == "__main__":
         epoch_num = save["epoch"]
         print("Loading: " + args.in_label)
         print("Epoch: " + str(epoch_num))
-    else:
-        # initialize weights to 0
-        def init_weights(m):
-            if isinstance(m, nn.Linear):
-                m.weight.data.fill_(0.01)
-                m.bias.data.fill_(0.01)
-        autoenc.apply(init_weights)
 
     start_time = time.perf_counter()
 
