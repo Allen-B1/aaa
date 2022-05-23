@@ -17,7 +17,7 @@ parser.add_argument("--file", type=str, help="file", default=None)
 args = parser.parse_args()
 
 model = autoenc.AutoEncoder()
-save = torch.load(MODEL)
+save = torch.load(MODEL, map_location=torch.device('cpu'))
 model.load_state_dict(save["model"])
 epoch: int = save["epoch"]
 

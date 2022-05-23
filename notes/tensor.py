@@ -1,6 +1,7 @@
 from typing import Dict, List, Sequence
 from .note import Measure, Note
 import torch
+import math
 
 def to_tensor(measure: Measure) -> torch.Tensor:
     tensor = torch.zeros((49, 88))
@@ -15,7 +16,7 @@ def to_tensor(measure: Measure) -> torch.Tensor:
     return tensor
 
 def from_tensor(tensor: torch.Tensor, min_duration=0.125) -> Measure:
-    time_sig = (int(round(tensor[48][0].item())), int(round(tensor[48][1].item())))
+    time_sig = (int(round(tensor[48][0].item())), int(2**round(math.log2(tensor[48][1].item()))))
     beats = time_sig[0] / time_sig[1] * 4
     tempo = tensor[48][2].item()
 
