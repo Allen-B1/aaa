@@ -1,3 +1,4 @@
+from typing import List
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
@@ -5,6 +6,7 @@ import preprocess
 import argparse
 import random
 import time
+import os
 
 SAVE_FOLDER = "saves/autoenc/trial-4"
 
@@ -28,6 +30,10 @@ class AutoEncoder(nn.Module):
         return self.decoder(self.encoder(torch.flatten(x)))
     
 if __name__ == "__main__":
+    try:
+        os.makedirs(SAVE_FOLDER + "/stats")
+    except FileExistsError: pass
+
     parser = argparse.ArgumentParser(description='Run the AutoEncoder')
     parser.add_argument("--epochs", type=int, help="Number of epochs to train (default: 1)", default=1)
     parser.add_argument("--in-label", type=str, help="Model label to resume from", default=None)
@@ -56,6 +62,7 @@ if __name__ == "__main__":
     start_time = time.perf_counter()
 
     optimizer = torch.optim.Adam(autoenc.parameters(), lr=1e-2)
+    losses: List[float] = []
     for i in range(args.epochs):
         random.shuffle(data)
         losses = []
@@ -68,12 +75,12 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
 
+            losses.append(loss.item())
+
             if iter_num % 100 == 0:
-                losses.append(loss.item())
                 print("[E%d][%d] loss: %f" % (epoch_num + 1, iter_num, loss), end="\n" if iter_num % 1000 == 0 else '\r')
 
         epoch_num += 1
-
 
     end_time = time.perf_counter()
     time_elapsed = end_time - start_time
@@ -82,3 +89,9 @@ if __name__ == "__main__":
     print("Epoch: " + str(epoch_num))
     torch.save({"model": autoenc.state_dict(), "epoch": epoch_num}, SAVE_FOLDER + "/" + args.out_label + ".pt")
     print("Saving to: " + args.out_label + ".pt")
+
+    # save stats file
+    import pandas
+    df = pandas.DataFrame({"loss": losses})
+    df.to_csv(SAVE_FOLDER + "/stats/epoch-" + str(epoch_num) + ".csv")
+    print("Saved stats file in stats/epoch-" + str(epoch_num) + ".csv")
