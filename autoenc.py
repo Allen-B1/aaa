@@ -27,7 +27,7 @@ class AutoEncoder(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.decoder(self.encoder(torch.flatten(x)))
+        return self.decoder(F.dropout(self.encoder(torch.flatten(x))))
 
     def get_code(self, x: torch.Tensor) -> torch.Tensor:
         return F.relu(self.encoder(torch.flatten(x)))
@@ -101,4 +101,3 @@ if __name__ == "__main__":
     df = pandas.DataFrame({"epoch": epochs, "loss": losses})
     multi_csv_file = "/stats/epochs-" + str(epoch_num - args.epochs + 1) + "-to-" + str(epoch_num) + ".csv"
     df.to_csv(SAVE_FOLDER + multi_csv_file)
-    
