@@ -8,7 +8,7 @@ import random
 import time
 import os
 
-SAVE_FOLDER = "saves/autoenc/trial-4"
+SAVE_FOLDER = "saves/autoenc/trial-6"
 
 class AutoEncoder(nn.Module):
     def __init__(self):
@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
     start_time = time.perf_counter()
 
-    optimizer = torch.optim.Adam(autoenc.parameters(), lr=1e-2)
+    optimizer = torch.optim.Adam(autoenc.parameters(), lr=1e-4)
     losses: List[float] = []
     for i in range(args.epochs):
         random.shuffle(data)
