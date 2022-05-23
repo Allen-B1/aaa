@@ -13,7 +13,8 @@ SAVE_FOLDER = "saves/autoenc/trial-4"
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
 parser.add_argument("action", metavar="ACTION", type=str, help="Action to take [gen-file, gen-rand]")
-parser.add_argument("--file", type=str, help="file", default=None)
+parser.add_argument("--file", type=str, help="File", default=None)
+parser.add_argument("--measures", type=int, help="Number of measures to generate", default=32)
 args = parser.parse_args()
 
 model = autoenc.AutoEncoder()
@@ -45,10 +46,10 @@ if args.action == "gen-file":
         pm.write(SAVE_FOLDER + "/e%d/from/" % epoch + input_basename + ".mid")
 
 elif args.action == "gen-rand":
-    code = torch.rand(120)
-    measure_tensor = torch.reshape(model.decoder(code), (49, 88))
-    measure = notes.tensor.from_tensor(measure_tensor)
-    encoded_piece = Piece(measures=[measure], parts=['piano'])
+    code = torch.rand(args.measures, 120)
+    measures_tensor = torch.reshape(model.decoder(code), (-1, 49, 88))
+    measures = [notes.tensor.from_tensor(measure_tensor) for measure_tensor in measures_tensor]
+    encoded_piece = Piece(measures=measures, parts=['piano'])
     pm = notes.midi.to_midi(encoded_piece)
 
     id = ''.join([random.choice("abcdefghijklmnopqrstuvwxyx") for i in range(16)])
