@@ -48,8 +48,9 @@ if __name__ == "__main__":
     else:
         # initialize weights to 0
         def init_weights(m):
-            m.weight.data.fill_(0.01)
-            m.bias.data.fill_(0.01)
+            if isinstance(m, nn.Linear):
+                m.weight.data.fill_(0.01)
+                m.bias.data.fill_(0.01)
         autoenc.apply(init_weights)
 
     start_time = time.perf_counter()
