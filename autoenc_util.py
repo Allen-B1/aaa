@@ -8,8 +8,8 @@ import os.path
 import torch
 import random
 
-MODEL = "saves/autoenc/trial-4/model1.pt"
-SAVE_FOLDER = "saves/autoenc/trial-4"
+MODEL = "saves/autoenc/trial-5/model-1.pt"
+SAVE_FOLDER = "saves/autoenc/trial-5"
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
 parser.add_argument("action", metavar="ACTION", type=str, help="Action to take [gen-file, gen-rand]")
@@ -42,7 +42,8 @@ if args.action == "gen-file":
         pm = notes.midi.to_midi(encoded_piece)
 
         input_basename = os.path.splitext(os.path.basename(args.file))[0]
-        pm.lyrics.append(pretty_midi.Lyric(input_basename, 0))
+        pm.lyrics.append(pretty_midi.Lyric("Epoch " + str(epoch), 0))
+        pm.lyrics.append(pretty_midi.Lyric(input_basename, 1/(measures[0].tempo * (1/60))))
         pm.write(SAVE_FOLDER + "/e%d/from/" % epoch + input_basename + ".mid")
 
 elif args.action == "gen-rand":
@@ -51,6 +52,8 @@ elif args.action == "gen-rand":
     measures = [notes.tensor.from_tensor(measure_tensor) for measure_tensor in measures_tensor]
     encoded_piece = Piece(measures=measures, parts=['piano'])
     pm = notes.midi.to_midi(encoded_piece)
+    pm.lyrics.append(pretty_midi.Lyric("Epoch " + str(epoch), 0))
+    pm.lyrics.append(pretty_midi.Lyric("Random", 1/(measures[0].tempo * (1/60))))
 
     id = ''.join([random.choice("abcdefghijklmnopqrstuvwxyx") for i in range(16)])
     print("Genereated " + id + ".mid")
