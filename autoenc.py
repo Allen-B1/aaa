@@ -28,6 +28,9 @@ class AutoEncoder(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.decoder(self.encoder(torch.flatten(x)))
+
+    def get_code(self, x: torch.Tensor) -> torch.Tensor:
+        return F.relu(self.encoder(torch.flatten(x)))
     
 if __name__ == "__main__":
     try:

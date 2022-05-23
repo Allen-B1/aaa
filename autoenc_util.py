@@ -10,7 +10,7 @@ import random
 import pandas
 import matplotlib.pyplot as plt
 
-MODEL = "saves/autoenc/trial-6/model-10.pt"
+MODEL = "saves/autoenc/trial-6/model-50.pt"
 SAVE_FOLDER = "saves/autoenc/trial-6"
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
@@ -72,5 +72,17 @@ elif args.action == "loss":
     plt.xlabel("Sample #")
     plt.ylabel("Loss")
     plt.show()
+elif args.action == "show-code":
+    if args.file is None:
+        print("--file must be specified")    
+    else:
+        piece = notes.mxl.parse_file(args.file)
+        codes = []
+        for measure in piece.measures:
+            code = model.get_code(notes.tensor.to_tensor(measure))
+            codes.append([codeitem.item() for codeitem in code])
+        df = pandas.DataFrame(codes)
+        print(df)
+
 else:
     print("Unknown action: " + args.action)
