@@ -7,14 +7,17 @@ import pretty_midi
 import os.path
 import torch
 import random
+import pandas
+import matplotlib.pyplot as plt
 
-MODEL = "saves/autoenc/trial-6/model-1.pt"
+MODEL = "saves/autoenc/trial-6/model-10.pt"
 SAVE_FOLDER = "saves/autoenc/trial-6"
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
 parser.add_argument("action", metavar="ACTION", type=str, help="Action to take [gen-file, gen-rand]")
 parser.add_argument("--file", type=str, help="File", default=None)
 parser.add_argument("--measures", type=int, help="Number of measures to generate", default=32)
+parser.add_argument("--epoch", type=int, help="Epoch number of stats file", default=1)
 args = parser.parse_args()
 
 model = autoenc.AutoEncoder()
@@ -58,5 +61,16 @@ elif args.action == "gen-rand":
     id = ''.join([random.choice("abcdefghijklmnopqrstuvwxyx") for i in range(16)])
     print("Genereated " + id + ".mid")
     pm.write(SAVE_FOLDER + "/e%d/rand/" % epoch + id + ".mid")
+elif args.action == "loss":
+    stats_file = SAVE_FOLDER + "/stats/epoch-" + str(args.epoch) + ".csv"
+    df = pandas.read_csv(stats_file)
+    losses = df['loss']
+
+    plt.figure()
+    plt.title("Epoch " + str(args.epoch))
+    plt.plot(losses)
+    plt.xlabel("Sample #")
+    plt.ylabel("Loss")
+    plt.show()
 else:
     print("Unknown action: " + args.action)
