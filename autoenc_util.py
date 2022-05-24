@@ -22,6 +22,7 @@ parser.add_argument("--piece", type=str, help="Piece from the midide dataset", d
 parser.add_argument("--measures", type=int, help="Number of measures to generate", default=32)
 parser.add_argument("--epoch", type=int, help="Epoch number of stats file", default=1)
 parser.add_argument("--epoch-to", type=int, help="Epoch number of stats file", default=None)
+parser.add_argument("--measure-num", type=int, default=1)
 args = parser.parse_args()
 
 try:
@@ -117,7 +118,7 @@ elif args.action == "show-output":
         print("--file or --piece must be specified")    
     else:
         piece = notes.mxl.parse_file(mxl_file)
-        measure = piece.measures[0]
+        measure = piece.measures[args.measure_num - 1]
         measure_tensor = notes.tensor.to_tensor(measure)
         output_tensor = torch.reshape(model(measure_tensor), (49, 88))
         torch.set_printoptions(threshold=10000)
