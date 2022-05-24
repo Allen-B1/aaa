@@ -11,7 +11,7 @@ import random
 import pandas
 import matplotlib.pyplot as plt
 
-MODEL = autoenc.SAVE_FOLDER + "/model-1.pt"
+MODEL = autoenc.SAVE_FOLDER + "/model-20.pt"
 SAVE_FOLDER = autoenc.SAVE_FOLDER
 model, epoch = autoenc.load(MODEL, "cpu")
 

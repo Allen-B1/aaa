@@ -12,6 +12,12 @@ parser.add_argument("--skip-download", action='store_true', help="skip downloadi
 args = parser.parse_args()
 
 if not args.skip_download:
+    try:
+        os.makedirs("datasets/midide")
+    except FileExistsError: pass
+    with open("datasets/midide/README", "w") as f:
+        f.write("Dataset scraped from http://www.piano-midi.de/, licensed under CC-BY-SA\n")
+
     resp: http.client.HTTPResponse = urllib.request.urlopen("http://www.piano-midi.de/")
     body = resp.read().decode('utf8')
     composers = re.findall(r"<a href=\"(\w+).htm\" title=\"[\w\s]+ Midi and Audio Files\">", body)
@@ -22,13 +28,18 @@ if not args.skip_download:
         result = re.findall(r"<a href=\"zip/(\w+).zip\">", body)
         if len(result) != 0:
             composers_zip.append(result[0])
+        else: # no zip file
+            pieces = re.findall(r"href=\"(midis/\w+/(\w+)_format0.mid)\">♫</a></td>", body)
+            print("collecting without zip " + id + "...")
+            for (path, name) in pieces:
+                try:
+                    os.mkdir("datasets/midide/" + id)
+                except FileExistsError: pass
 
-    try:
-        os.makedirs("datasets/midide")
-    except FileExistsError: pass
-    with open("datasets/midide/README", "w") as f:
-        f.write("Dataset scraped from http://www.piano-midi.de/, licensed under CC-BY-SA\n")
-
+                resp_midi: http.client.HTTPResponse = urllib.request.urlopen("http://piano-midi.de/" + path)
+                with open("datasets/midide/" + id + "/" + name+ ".mid", "wb") as bf:
+                    bf.write(resp_midi.read())
+            
     for id in composers_zip:
         print("collecting "+ id + ".zip ...")
         try:
