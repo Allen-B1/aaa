@@ -18,8 +18,10 @@ model, epoch = autoenc.load(MODEL, "cpu")
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
 parser.add_argument("action", metavar="ACTION", type=str, help="Action to take [gen-file, gen-rand]")
 parser.add_argument("--file", type=str, help="File", default=None)
+parser.add_argument("--piece", type=str, help="Piece from the midide dataset", default=None)
 parser.add_argument("--measures", type=int, help="Number of measures to generate", default=32)
 parser.add_argument("--epoch", type=int, help="Epoch number of stats file", default=1)
+parser.add_argument("--epoch-to", type=int, help="Epoch number of stats file", default=None)
 args = parser.parse_args()
 
 try:
@@ -33,10 +35,11 @@ try:
 except FileExistsError: pass
 
 if args.action == "gen-file":
-    if args.file is None:
-        print("--file must be specified")    
+    if args.file is None and args.piece is None:
+        print("--file or --piece must be specified")    
     else:
-        piece = notes.mxl.parse_file(args.file)
+        file = args.file if args.file is not None else "datasets/midide/" + args.piece + ".musicxml"
+        piece = notes.mxl.parse_file(file)
         measures: List[Measure] = []
         for measure in piece.measures:
             encoded_measure = notes.tensor.from_tensor(torch.reshape(model(notes.tensor.to_tensor(measure)), shape=(49, 88)), min_duration=1/8)
@@ -44,7 +47,7 @@ if args.action == "gen-file":
         encoded_piece = Piece(measures, parts=['piano'])
         pm = notes.midi.to_midi(encoded_piece)
 
-        input_basename = os.path.splitext(os.path.basename(args.file))[0]
+        input_basename = os.path.splitext(os.path.basename(file))[0]
         pm.lyrics.append(pretty_midi.Lyric("Epoch " + str(epoch), 0))
         pm.lyrics.append(pretty_midi.Lyric(input_basename, 1/(measures[0].tempo * (1/60))))
         pm.write(SAVE_FOLDER + "/e%d/from/" % epoch + input_basename + ".mid")
@@ -62,16 +65,32 @@ elif args.action == "gen-rand":
     print("Genereated " + id + ".mid")
     pm.write(SAVE_FOLDER + "/e%d/rand/" % epoch + id + ".mid")
 elif args.action == "loss":
-    stats_file = SAVE_FOLDER + "/stats/epoch-" + str(args.epoch) + ".csv"
-    df = pandas.read_csv(stats_file)
-    losses = df['loss']
+    if args.epoch_to == None:
+        stats_file = SAVE_FOLDER + "/stats/epoch-" + str(args.epoch) + ".csv"
+        df = pandas.read_csv(stats_file)
+        losses = df['loss']
 
-    plt.figure()
-    plt.title("Epoch " + str(args.epoch))
-    plt.plot(losses)
-    plt.xlabel("Sample #")
-    plt.ylabel("Loss")
-    plt.show()
+        plt.figure()
+        plt.title("Epoch " + str(args.epoch))
+        plt.plot(losses)
+        plt.xlabel("Sample #")
+        plt.ylabel("Loss")
+        plt.show()
+    else:
+        from_: int = args.epoch
+        to: int = args.epoch_to
+
+        df = pandas.read_csv(SAVE_FOLDER + "/stats/epochs-%d-to-%d.csv" % (from_, to))
+        losses = df['loss']
+        epochs = df['epochs']
+
+        plt.figure()
+        plt.title("Epochs %d to %d" % (from_, to))
+        plt.plot(epochs, losses)
+        plt.xlabel("Epoch #")
+        plt.ylabel("Loss")
+        plt.show()
+
 elif args.action == "show-code":
     if args.file is None:
         print("--file must be specified")    
