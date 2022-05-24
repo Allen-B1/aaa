@@ -8,7 +8,8 @@ import random
 import time
 import os
 
-SAVE_FOLDER = "saves/autoenc/trial-7"
+VERSION = 7
+SAVE_FOLDER = "saves/autoenc/trial-" + str(VERSION)
 
 class AutoEncoder(nn.Module):
     def __init__(self):
@@ -32,7 +33,25 @@ class AutoEncoder(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.decode(self.encode(x))
+
+def load(file: str, device: str='cuda') -> Tuple[AutoEncoder, int]:
+    save = torch.load(file, map_location=torch.device(device))
+    if save['version'] != VERSION:
+        raise Exception("expected v" + str(VERSION) + ", got v" + str(save['version']))
     
+    autoenc = AutoEncoder().to(device)
+    autoenc.load_state_dict(save["model"])
+    epoch = save["epoch"]
+    return (autoenc, epoch)
+
+def save(autoenc: AutoEncoder, epoch: int, file: str):
+    torch.save({
+        "model": autoenc.state_dict(),
+        "epoch": epoch,
+        "version": VERSION
+    }, file)
+
+
 if __name__ == "__main__":
     try:
         os.makedirs(SAVE_FOLDER + "/stats")
@@ -47,14 +66,14 @@ if __name__ == "__main__":
     data = preprocess.load("saves/preprocessed.pt")
     data = [(a, b, c, measure.to("cuda" if torch.cuda.is_available() else "cpu")) for (a, b, c, measures) in data for measure in measures]
 
-    autoenc = AutoEncoder().to("cuda" if torch.cuda.is_available() else "cpu")
-    epoch_num: int = 0 # number of epochs, before the process
     if args.in_label is not None:
-        save = torch.load(SAVE_FOLDER + "/" + args.in_label + ".pt")
-        autoenc.load_state_dict(save["model"])
-        epoch_num = save["epoch"]
+        autoenc, epoch_num = load(SAVE_FOLDER + "/" + args.in_label + ".pt")
         print("Loading: " + args.in_label)
         print("Epoch: " + str(epoch_num))
+    else:
+        autoenc, epoch_num = AutoEncoder(), 0
+        autoenc.to("cuda")
+        print("Initializing new autoencoder")
 
     start_time = time.perf_counter()
 
@@ -89,8 +108,8 @@ if __name__ == "__main__":
 
     print("\n\033[32m\033[1mFinished training %d epochs in %fs\033[0m" % (args.epochs, time_elapsed))
     print("Epoch: " + str(epoch_num))
-    torch.save({"model": autoenc.state_dict(), "epoch": epoch_num}, SAVE_FOLDER + "/" + args.out_label + ".pt")
-    print("Saving to: " + args.out_label + ".pt")
+    save(autoenc, epoch_num, SAVE_FOLDER + "/" + args.out_label + ".pt")
+    print("Saving to: " + args.out_label)
 
     # save stats file
     import pandas
