@@ -92,7 +92,7 @@ class AutoEncoderV11(AutoEncoder):
 def load(file: str, device: str='cuda') -> Tuple[AutoEncoder, int]:
     save = torch.load(file, map_location=torch.device(device))
     version = save['version']
-    autoenc = (AutoEncoderV10() if version == 10 else AutoEncoderV11() if version == 11 else cast(AutoEncoder, None)).to(device)
+    autoenc = (AutoEncoderV10() if version == 10 else (AutoEncoderV11() if version == 11 else cast(AutoEncoder, None))).to(device)
     autoenc.load_state_dict(save["model"])
     epoch = save["epoch"]
     return (autoenc, epoch)
