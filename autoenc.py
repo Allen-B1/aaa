@@ -8,7 +8,7 @@ import random
 import time
 import os
 
-VERSION = 9
+VERSION = 10
 SAVE_FOLDER = "saves/autoenc/trial-" + str(VERSION)
 
 class AutoEncoder(nn.Module):
@@ -16,8 +16,8 @@ class AutoEncoder(nn.Module):
         nn.Module.__init__(self)
 
         self.hidden1 = nn.Linear(49 * 88, 512)
-        self.code = nn.Linear(512, 120)
-        self.hidden2 = nn.Linear(120, 512)
+        self.code = nn.Linear(512, 64)
+        self.hidden2 = nn.Linear(64, 512)
         self.output = nn.Linear(512, 49 * 88)
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
