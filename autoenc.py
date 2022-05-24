@@ -130,8 +130,7 @@ if __name__ == "__main__":
 
     if args.in_label is not None:
         autoenc, epoch_num = load(SAVE_FOLDER + "/" + args.in_label + ".pt")
-        autoenc.train()
-        assert autoenc.version == VERSION
+        assert autoenc.version() == VERSION
         print("Loading: " + args.in_label)
         print("Epoch: " + str(epoch_num))
     else:
