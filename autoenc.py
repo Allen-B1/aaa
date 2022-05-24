@@ -81,7 +81,7 @@ if __name__ == "__main__":
     start_time = time.perf_counter()
 
     # training loop
-    optimizer = torch.optim.Adam(autoenc.parameters(), lr=1e-6)
+    optimizer = torch.optim.Adam(autoenc.parameters(), lr=1e-4)
     losses_within_epoch: List[float] = []
     losses_epochs: List[Tuple[int, float]] = []
     for i in range(args.epochs):
