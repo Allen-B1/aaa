@@ -84,7 +84,7 @@ if __name__ == "__main__":
         print("Epoch: " + str(epoch_num))
     else:
         autoenc, epoch_num = AutoEncoder(), 0
-#        autoenc.to("cuda")
+        autoenc.to("cuda")
         print("Initializing new autoencoder")
 
     ds = AutoEncDataset()
