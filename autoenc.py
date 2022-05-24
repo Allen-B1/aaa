@@ -1,4 +1,5 @@
-from typing import List, Tuple
+from abc import ABC, abstractmethod
+from typing import List, Tuple, cast
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
@@ -11,23 +12,24 @@ import os
 VERSION = 11
 SAVE_FOLDER = "saves/autoenc/trial-" + str(VERSION)
 
-class AutoEncoder(nn.Module):
+class AutoEncoder(nn.Module, ABC):
+    @abstractmethod
+    def encode(self, x: torch.Tensor) -> torch.Tensor: pass
+    @abstractmethod
+    def decode_regularize(self, x: torch.Tensor) -> torch.Tensor: pass
+    @abstractmethod
+    def forward(self, x: torch.Tensor) -> torch.Tensor: pass
+    @abstractmethod
+    def version(self) -> int: pass
+
+class AutoEncoderV10(AutoEncoder):
     def __init__(self):
         nn.Module.__init__(self)
 
-        if VERSION == 10:
-            self.hidden1 = nn.Linear(49 * 88, 512)
-            self.code = nn.Linear(512, 120)
-            self.hidden2 = nn.Linear(120, 512)
-            self.output = nn.Linear(512, 49 * 88)
-        elif VERSION == 11:
-            self.hidden1 = nn.Linear(49 * 88, 512)
-            self.code = nn.Linear(512, 120)
-            self.hidden2 = nn.Linear(120, 512)
-            self.output = nn.Linear(512, 49 * 88)
-
-            self.dropout = nn.Dropout(p=0.1)
-
+        self.hidden1 = nn.Linear(49 * 88, 512)
+        self.code = nn.Linear(512, 120)
+        self.hidden2 = nn.Linear(120, 512)
+        self.output = nn.Linear(512, 49 * 88)
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
         x = nn.Flatten()(x)
@@ -38,6 +40,41 @@ class AutoEncoder(nn.Module):
     def decode(self, x: torch.Tensor) -> torch.Tensor:
         x = F.leaky_relu(self.hidden2(x))
         x = self.output(x)
+        return x 
+
+    def decode_regularize(self, x: torch.Tensor) -> torch.Tensor:
+        return F.relu(self.decode(x))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.encode(x)
+        x = self.decode(x)
+        return x
+    
+    def version(self) -> int:
+        return 10
+
+class AutoEncoderV11(AutoEncoder):
+    def __init__(self):
+        nn.Module.__init__(self)
+
+        self.hidden1 = nn.Linear(49 * 88, 512)
+        self.code = nn.Linear(512, 120)
+        self.hidden2 = nn.Linear(120, 512)
+        self.output = nn.Linear(512, 49 * 88)
+
+        self.dropout = nn.Dropout(p=0.1)
+
+    def encode(self, x: torch.Tensor) -> torch.Tensor:
+        x = nn.Flatten()(x)
+        x = F.leaky_relu(self.hidden1(x))
+        x = self.dropout(x)
+        x = F.leaky_relu(self.code(x))
+        return x
+    
+    def decode(self, x: torch.Tensor) -> torch.Tensor:
+        x = F.leaky_relu(self.hidden2(x))
+        x = self.dropout(x)
+        x = self.output(x)
         return x
     
     def decode_regularize(self, x: torch.Tensor) -> torch.Tensor:
@@ -45,17 +82,17 @@ class AutoEncoder(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.encode(x)
-        if VERSION == 11:
-            x = self.dropout(x)
+        x = self.dropout(x)
         x = self.decode(x)
         return x
 
+    def version(self) -> int:
+        return 11
+
 def load(file: str, device: str='cuda') -> Tuple[AutoEncoder, int]:
     save = torch.load(file, map_location=torch.device(device))
-    if save['version'] != VERSION:
-        raise Exception("expected v" + str(VERSION) + ", got v" + str(save['version']))
-    
-    autoenc = AutoEncoder().to(device)
+    version = save['version']
+    autoenc = (AutoEncoderV10() if version == 10 else AutoEncoderV11() if version == 11 else cast(AutoEncoder, None)).to(device)
     autoenc.load_state_dict(save["model"])
     epoch = save["epoch"]
     return (autoenc, epoch)
@@ -64,7 +101,7 @@ def save(autoenc: AutoEncoder, epoch: int, file: str):
     torch.save({
         "model": autoenc.state_dict(),
         "epoch": epoch,
-        "version": VERSION
+        "version": autoenc.version()
     }, file)
 
 
@@ -94,10 +131,11 @@ if __name__ == "__main__":
     if args.in_label is not None:
         autoenc, epoch_num = load(SAVE_FOLDER + "/" + args.in_label + ".pt")
         autoenc.train()
+        assert autoenc.version == VERSION
         print("Loading: " + args.in_label)
         print("Epoch: " + str(epoch_num))
     else:
-        autoenc, epoch_num = AutoEncoder(), 0
+        autoenc, epoch_num = AutoEncoderV11() if VERSION == 11 else AutoEncoderV10(), 0
         autoenc.to("cuda")
         print("Initializing new autoencoder")
 
