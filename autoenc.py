@@ -21,7 +21,7 @@ class AutoEncoder(nn.Module):
         self.output = nn.Linear(512, 49 * 88)
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
-        x = torch.flatten(x)
+        x = nn.Flatten()(x)
         x = F.leaky_relu(self.hidden1(x))
         x = F.leaky_relu(self.code(x))
         return x
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         print("Epoch: " + str(epoch_num))
     else:
         autoenc, epoch_num = AutoEncoder(), 0
-        autoenc.to("cuda")
+#        autoenc.to("cuda")
         print("Initializing new autoencoder")
 
     ds = AutoEncDataset()
