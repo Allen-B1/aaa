@@ -21,9 +21,7 @@ class AutoEncoder(nn.Module):
         self.output = nn.Linear(512, 49 * 88)
 
         if VERSION == 11:
-            self.dropout1 = nn.Dropout(p=0.4)
-            self.dropout2 = nn.Dropout(p=0.4)
-            self.dropout3 = nn.Dropout(p=0.5)
+            self.dropout = nn.Dropout(p=0.3)
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
         x = nn.Flatten()(x)
@@ -33,7 +31,7 @@ class AutoEncoder(nn.Module):
             return x
         elif VERSION == 11:
             x = F.leaky_relu(self.hidden1(x))
-            x = self.dropout1(x)
+            x = self.dropout(x)
             x = F.leaky_relu(self.code(x))
             return x
         else:
@@ -42,7 +40,7 @@ class AutoEncoder(nn.Module):
     def decode(self, x: torch.Tensor) -> torch.Tensor:
         x = F.leaky_relu(self.hidden2(x))
         if VERSION == 11:
-            x = self.dropout2(x)
+            x = self.dropout(x)
         x = self.output(x)
         return x
     
@@ -52,7 +50,7 @@ class AutoEncoder(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.encode(x)
         if VERSION == 11:
-            x = self.dropout3(x)
+            x = self.dropout(x)
         x = self.decode(x)
         return x
 
@@ -99,6 +97,7 @@ if __name__ == "__main__":
 
     if args.in_label is not None:
         autoenc, epoch_num = load(SAVE_FOLDER + "/" + args.in_label + ".pt")
+        autoenc.train()
         print("Loading: " + args.in_label)
         print("Epoch: " + str(epoch_num))
     else:

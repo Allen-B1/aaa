@@ -11,9 +11,10 @@ import random
 import pandas
 import matplotlib.pyplot as plt
 
-MODEL = autoenc.SAVE_FOLDER + "/model-500.pt"
+MODEL = autoenc.SAVE_FOLDER + "/model-100.pt"
 SAVE_FOLDER = autoenc.SAVE_FOLDER
 model, epoch = autoenc.load(MODEL, "cpu")
+model.eval()
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
 parser.add_argument("action", metavar="ACTION", type=str, help="Action to take [gen-file, gen-rand]")
