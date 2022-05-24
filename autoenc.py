@@ -56,6 +56,18 @@ def save(autoenc: AutoEncoder, epoch: int, file: str):
 
 
 if __name__ == "__main__":
+    from torch.utils.data import Dataset, DataLoader
+    class AutoEncDataset(Dataset):
+        def __init__(self):
+            self.data = preprocess.load("saves/preprocessed.pt")
+            self.data = [(a, b, c, measure.to("cuda" if torch.cuda.is_available() else "cpu")) for (a, b, c, measures) in self.data for measure in measures]
+
+        def __len__(self) -> int:
+            return len(self.data)
+        
+        def __getitem__(self, idx: int) -> torch.Tensor:
+            return self.data[idx][3]
+
     try:
         os.makedirs(SAVE_FOLDER + "/stats")
     except FileExistsError: pass
@@ -66,9 +78,6 @@ if __name__ == "__main__":
     parser.add_argument("--out-label", type=str, help="Model label to write to", required=True)
     args = parser.parse_args()
 
-    data = preprocess.load("saves/preprocessed.pt")
-    data = [(a, b, c, measure.to("cuda" if torch.cuda.is_available() else "cpu")) for (a, b, c, measures) in data for measure in measures]
-
     if args.in_label is not None:
         autoenc, epoch_num = load(SAVE_FOLDER + "/" + args.in_label + ".pt")
         print("Loading: " + args.in_label)
@@ -78,6 +87,8 @@ if __name__ == "__main__":
         autoenc.to("cuda")
         print("Initializing new autoencoder")
 
+    ds = AutoEncDataset()
+
     start_time = time.perf_counter()
 
     # training loop
@@ -85,12 +96,12 @@ if __name__ == "__main__":
     losses_within_epoch: List[float] = []
     losses_epochs: List[Tuple[int, float]] = []
     for i in range(args.epochs):
-        random.shuffle(data)
+        dl = DataLoader(ds, batch_size=64, shuffle=True)
         losses_within_epoch = []
-        for iter_num, (name, composer, c, measure) in enumerate(data):
-            pred = autoenc(measure)
-            pred = torch.reshape(pred, (49, 88))
-            loss = F.mse_loss(pred, measure)
+        for batch_num, measures in enumerate(dl):
+            pred = autoenc(measures)
+            pred = torch.reshape(pred, (-1, 49, 88))
+            loss = F.mse_loss(pred, measures)
 
             optimizer.zero_grad()
             loss.backward()
@@ -98,8 +109,7 @@ if __name__ == "__main__":
 
             losses_within_epoch.append(loss.item())
 
-            if iter_num % 100 == 0:
-                print("[E%d][%d] loss: %f" % (epoch_num + 1, iter_num, loss), end="\n" if iter_num % 1000 == 0 else '\r')
+            print("[E%02d][B%03d] loss: %f" % (epoch_num + 1, batch_num, loss), end="\n" if batch_num % 100 == 0 else '\r')
 
         avg_loss = sum(losses_within_epoch) / len(losses_within_epoch)
         losses_epochs.append((epoch_num + 1, avg_loss))
