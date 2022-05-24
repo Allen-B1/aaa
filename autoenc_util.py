@@ -11,7 +11,7 @@ import random
 import pandas
 import matplotlib.pyplot as plt
 
-MODEL = autoenc.SAVE_FOLDER + "/model-1.pt"
+MODEL = autoenc.SAVE_FOLDER + "/model-5.pt"
 SAVE_FOLDER = autoenc.SAVE_FOLDER
 model, epoch = autoenc.load(MODEL, "cpu")
 
@@ -111,5 +111,17 @@ elif args.action == "show-code":
             unused = unused.intersection(unused_tmp)
         print("unused: indexes", unused)
         print("unused: %d/%d"% (len(unused), 120))
+
+elif args.action == "show-output":
+    if mxl_file is None:
+        print("--file or --piece must be specified")    
+    else:
+        piece = notes.mxl.parse_file(mxl_file)
+        measure = piece.measures[0]
+        measure_tensor = notes.tensor.to_tensor(measure)
+        output_tensor = torch.reshape(model(measure_tensor), (49, 88))
+        torch.set_printoptions(threshold=10000)
+        print(measure_tensor)
+        print(output_tensor)
 else:
     print("Unknown action: " + args.action)
