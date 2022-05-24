@@ -16,8 +16,8 @@ class AutoEncoder(nn.Module):
         nn.Module.__init__(self)
 
         self.hidden1 = nn.Linear(49 * 88, 512)
-        self.code = nn.Linear(512, 64)
-        self.hidden2 = nn.Linear(64, 512)
+        self.code = nn.Linear(512, 120)
+        self.hidden2 = nn.Linear(120, 512)
         self.output = nn.Linear(512, 49 * 88)
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
@@ -28,8 +28,11 @@ class AutoEncoder(nn.Module):
     
     def decode(self, x: torch.Tensor) -> torch.Tensor:
         x = F.leaky_relu(self.hidden2(x))
-        x = F.relu(self.output(x))
+        x = self.output(x)
         return x
+    
+    def decode_regularize(self, x: torch.Tensor) -> torch.Tensor:
+        return F.relu(self.decode(x))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.decode(self.encode(x))

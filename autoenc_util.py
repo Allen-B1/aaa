@@ -44,7 +44,7 @@ if args.action == "gen-file":
         piece = notes.mxl.parse_file(mxl_file)
         measures: List[Measure] = []
         for measure in piece.measures:
-            encoded_measure = notes.tensor.from_tensor(torch.reshape(model(notes.tensor.to_tensor(measure)), shape=(49, 88)), min_duration=1/8)
+            encoded_measure = notes.tensor.from_tensor(torch.reshape(model.decode_regularize(model.encode(notes.tensor.to_tensor(measure))), shape=(49, 88)), min_duration=1/8)
             measures.append(encoded_measure)
         encoded_piece = Piece(measures, parts=['piano'])
         pm = notes.midi.to_midi(encoded_piece)
@@ -56,7 +56,7 @@ if args.action == "gen-file":
 
 elif args.action == "gen-rand":
     code = torch.rand(args.measures, 120)
-    measures_tensor = torch.reshape(model.decode(code), (-1, 49, 88))
+    measures_tensor = torch.reshape(model.decode_regularize(code), (-1, 49, 88))
     measures = [notes.tensor.from_tensor(measure_tensor) for measure_tensor in measures_tensor]
     encoded_piece = Piece(measures=measures, parts=['piano'])
     pm = notes.midi.to_midi(encoded_piece)
