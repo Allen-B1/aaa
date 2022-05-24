@@ -8,7 +8,7 @@ import random
 import time
 import os
 
-VERSION = 7
+VERSION = 8
 SAVE_FOLDER = "saves/autoenc/trial-" + str(VERSION)
 
 class AutoEncoder(nn.Module):
@@ -22,12 +22,12 @@ class AutoEncoder(nn.Module):
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
         x = torch.flatten(x)
-        x = F.elu(self.hidden1(x))
-        x = F.elu(self.code(x))
+        x = F.leaky_relu(self.hidden1(x))
+        x = F.leaky_relu(self.code(x))
         return x
     
     def decode(self, x: torch.Tensor) -> torch.Tensor:
-        x = F.elu(self.hidden2(x))
+        x = F.leaky_relu(self.hidden2(x))
         x = F.relu(self.output(x))
         return x
 
