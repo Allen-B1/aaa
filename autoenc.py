@@ -15,32 +15,27 @@ class AutoEncoder(nn.Module):
     def __init__(self):
         nn.Module.__init__(self)
 
-        self.hidden1 = nn.Linear(49 * 88, 512)
-        self.code = nn.Linear(512, 120)
-        self.hidden2 = nn.Linear(120, 512)
-        self.output = nn.Linear(512, 49 * 88)
+        if VERSION == 10:
+            self.hidden1 = nn.Linear(49 * 88, 512)
+            self.code = nn.Linear(512, 120)
+            self.hidden2 = nn.Linear(120, 512)
+            self.output = nn.Linear(512, 49 * 88)
+        elif VERSION == 11:
+            self.hidden1 = nn.Linear(49 * 88, 512)
+            self.code = nn.Linear(512, 120)
+            self.hidden2 = nn.Linear(120, 512)
+            self.output = nn.Linear(512, 49 * 88)
 
-        if VERSION == 11:
-            self.dropout = nn.Dropout(p=0.3)
+            self.dropout = nn.Dropout(p=0.1)
+
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
-        x = nn.Flatten()(x)
-        if VERSION == 10:
-            x = F.leaky_relu(self.hidden1(x))
-            x = F.leaky_relu(self.code(x))
-            return x
-        elif VERSION == 11:
-            x = F.leaky_relu(self.hidden1(x))
-            x = self.dropout(x)
-            x = F.leaky_relu(self.code(x))
-            return x
-        else:
-            raise Exception("invalid v%d" % VERSION)
+        x = F.leaky_relu(self.hidden1(x))
+        x = F.leaky_relu(self.code(x))
+        return x
     
     def decode(self, x: torch.Tensor) -> torch.Tensor:
         x = F.leaky_relu(self.hidden2(x))
-        if VERSION == 11:
-            x = self.dropout(x)
         x = self.output(x)
         return x
     
