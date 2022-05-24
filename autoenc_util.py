@@ -11,7 +11,7 @@ import random
 import pandas
 import matplotlib.pyplot as plt
 
-MODEL = autoenc.SAVE_FOLDER + "/model-20.pt"
+MODEL = autoenc.SAVE_FOLDER + "/model-500.pt"
 SAVE_FOLDER = autoenc.SAVE_FOLDER
 model, epoch = autoenc.load(MODEL, "cpu")
 
@@ -44,7 +44,7 @@ if args.action == "gen-file":
         piece = notes.mxl.parse_file(mxl_file)
         measures: List[Measure] = []
         for measure in piece.measures:
-            encoded_measure = notes.tensor.from_tensor(torch.reshape(model.decode_regularize(model.encode(notes.tensor.to_tensor(measure))), shape=(49, 88)), min_duration=1/8)
+            encoded_measure = notes.tensor.from_tensor(torch.reshape(model.decode_regularize(model.encode(notes.tensor.to_tensor(measure).unsqueeze(0))), shape=(49, 88)), min_duration=1/8)
             measures.append(encoded_measure)
         encoded_piece = Piece(measures, parts=['piano'])
         pm = notes.midi.to_midi(encoded_piece)
@@ -100,7 +100,7 @@ elif args.action == "show-code":
         piece = notes.mxl.parse_file(mxl_file)
         codes: List[List[float]] = []
         for measure in piece.measures:
-            code = model.encode(notes.tensor.to_tensor(measure))
+            code = model.encode(notes.tensor.to_tensor(measure).unsqueeze(0))[0]
             codes.append([codeitem.item() for codeitem in code])
         df = pandas.DataFrame(codes)
         filepath = SAVE_FOLDER + "/e" + str(epoch) + "/codes/" + basename(mxl_file) + ".csv"
