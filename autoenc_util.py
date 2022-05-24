@@ -11,8 +11,8 @@ import random
 import pandas
 import matplotlib.pyplot as plt
 
-MODEL = "saves/autoenc/trial-6/model-700.pt"
-SAVE_FOLDER = "saves/autoenc/trial-6"
+MODEL = "saves/autoenc/trial-7/model-1.pt"
+SAVE_FOLDER = "saves/autoenc/trial-7"
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
 parser.add_argument("action", metavar="ACTION", type=str, help="Action to take [gen-file, gen-rand]")
@@ -55,7 +55,7 @@ if args.action == "gen-file":
 
 elif args.action == "gen-rand":
     code = torch.rand(args.measures, 120)
-    measures_tensor = torch.reshape(model.decoder(code), (-1, 49, 88))
+    measures_tensor = torch.reshape(model.decode(code), (-1, 49, 88))
     measures = [notes.tensor.from_tensor(measure_tensor) for measure_tensor in measures_tensor]
     encoded_piece = Piece(measures=measures, parts=['piano'])
     pm = notes.midi.to_midi(encoded_piece)
@@ -81,17 +81,17 @@ elif args.action == "show-code":
         print("--file must be specified")    
     else:
         piece = notes.mxl.parse_file(args.file)
-        codes = []
+        codes: List[List[float]] = []
         for measure in piece.measures:
-            code = model.get_code(notes.tensor.to_tensor(measure))
+            code = model.encode(notes.tensor.to_tensor(measure))
             codes.append([codeitem.item() for codeitem in code])
         df = pandas.DataFrame(codes)
         filepath = SAVE_FOLDER + "/e" + str(epoch) + "/codes/" + basename(args.file) + ".csv"
         df.to_csv(filepath)
         print("Saved to: " + filepath)
         unused = set(range(0, 120))
-        for code in codes:
-            unused_tmp = set(idx for idx, codeitem in enumerate(code) if codeitem == 0)
+        for code_ in codes:
+            unused_tmp = set(idx for idx, codeitem in enumerate(code_) if codeitem == 0)
             unused = unused.intersection(unused_tmp)
         print("unused: indexes", unused)
         print("unused: %d/%d"% (len(unused), 120))

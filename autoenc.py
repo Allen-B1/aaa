@@ -8,29 +8,30 @@ import random
 import time
 import os
 
-SAVE_FOLDER = "saves/autoenc/trial-6"
+SAVE_FOLDER = "saves/autoenc/trial-7"
 
 class AutoEncoder(nn.Module):
     def __init__(self):
         nn.Module.__init__(self)
-        self.encoder = nn.Sequential(
-            nn.Linear(49 * 88, 512),
-            nn.ELU(),
-            nn.Linear(512, 120),
-        )
 
-        self.decoder = nn.Sequential(
-            nn.ELU(),
-            nn.Linear(120, 512),
-            nn.ELU(),
-            nn.Linear(512, 49 * 88)
-        )
+        self.hidden1 = nn.Linear(49 * 88, 512)
+        self.code = nn.Linear(512, 120)
+        self.hidden2 = nn.Linear(120, 512)
+        self.output = nn.Linear(512, 49 * 88)
+
+    def encode(self, x: torch.Tensor) -> torch.Tensor:
+        x = torch.flatten(x)
+        x = F.elu(self.hidden1(x))
+        x = F.elu(self.code(x))
+        return x
+    
+    def decode(self, x: torch.Tensor) -> torch.Tensor:
+        x = F.elu(self.hidden2(x))
+        x = F.relu(self.output(x))
+        return x
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.decoder(F.dropout(self.encoder(torch.flatten(x))))
-
-    def get_code(self, x: torch.Tensor) -> torch.Tensor:
-        return F.elu(self.encoder(torch.flatten(x)))
+        return self.decode(self.encode(x))
     
 if __name__ == "__main__":
     try:
@@ -57,6 +58,7 @@ if __name__ == "__main__":
 
     start_time = time.perf_counter()
 
+    # training loop
     optimizer = torch.optim.Adam(autoenc.parameters(), lr=1e-4)
     losses_within_epoch: List[float] = []
     losses_epochs: List[Tuple[int, float]] = []
