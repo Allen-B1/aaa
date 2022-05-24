@@ -30,6 +30,7 @@ class AutoEncoder(nn.Module):
 
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
+        x = nn.Flatten()(x)
         x = F.leaky_relu(self.hidden1(x))
         x = F.leaky_relu(self.code(x))
         return x
