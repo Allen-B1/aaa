@@ -15,14 +15,14 @@ class AutoEncoder(nn.Module):
         nn.Module.__init__(self)
         self.encoder = nn.Sequential(
             nn.Linear(49 * 88, 512),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(512, 120),
         )
 
         self.decoder = nn.Sequential(
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(120, 512),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(512, 49 * 88)
         )
 

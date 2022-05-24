@@ -11,7 +11,7 @@ import random
 import pandas
 import matplotlib.pyplot as plt
 
-MODEL = "saves/autoenc/trial-6/model-100.pt"
+MODEL = "saves/autoenc/trial-6/model-300.pt"
 SAVE_FOLDER = "saves/autoenc/trial-6"
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
@@ -31,6 +31,9 @@ try:
 except FileExistsError: pass
 try:
     os.makedirs(SAVE_FOLDER + "/e%d/from" % epoch)
+except FileExistsError: pass
+try:
+    os.makedirs(SAVE_FOLDER + "/e%d/codes" % epoch)
 except FileExistsError: pass
 
 if args.action == "gen-file":
