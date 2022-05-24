@@ -15,14 +15,14 @@ class AutoEncoder(nn.Module):
         nn.Module.__init__(self)
         self.encoder = nn.Sequential(
             nn.Linear(49 * 88, 512),
-            nn.LeakyReLU(),
+            nn.ELU(),
             nn.Linear(512, 120),
         )
 
         self.decoder = nn.Sequential(
-            nn.LeakyReLU(),
+            nn.ELU(),
             nn.Linear(120, 512),
-            nn.LeakyReLU(),
+            nn.ELU(),
             nn.Linear(512, 49 * 88)
         )
 
@@ -30,7 +30,7 @@ class AutoEncoder(nn.Module):
         return self.decoder(F.dropout(self.encoder(torch.flatten(x))))
 
     def get_code(self, x: torch.Tensor) -> torch.Tensor:
-        return F.relu(self.encoder(torch.flatten(x)))
+        return F.elu(self.encoder(torch.flatten(x)))
     
 if __name__ == "__main__":
     try:
