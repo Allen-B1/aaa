@@ -1,6 +1,6 @@
 import argparse
 from posixpath import basename
-from typing import List
+from typing import List, Union
 import notes.mxl, notes.tensor, notes.midi
 from notes.note import Measure, Piece
 import autoenc
@@ -34,12 +34,13 @@ try:
     os.makedirs(SAVE_FOLDER + "/e%d/codes" % epoch)
 except FileExistsError: pass
 
+mxl_file: Union[str, None] = args.file if args.file is not None else ("datasets/midide/" + args.piece + ".musicxml" if args.piece is not None else None)
+
 if args.action == "gen-file":
-    if args.file is None and args.piece is None:
+    if mxl_file is None:
         print("--file or --piece must be specified")    
     else:
-        file = args.file if args.file is not None else "datasets/midide/" + args.piece + ".musicxml"
-        piece = notes.mxl.parse_file(file)
+        piece = notes.mxl.parse_file(mxl_file)
         measures: List[Measure] = []
         for measure in piece.measures:
             encoded_measure = notes.tensor.from_tensor(torch.reshape(model(notes.tensor.to_tensor(measure)), shape=(49, 88)), min_duration=1/8)
@@ -47,7 +48,7 @@ if args.action == "gen-file":
         encoded_piece = Piece(measures, parts=['piano'])
         pm = notes.midi.to_midi(encoded_piece)
 
-        input_basename = os.path.splitext(os.path.basename(file))[0]
+        input_basename = os.path.splitext(os.path.basename(mxl_file))[0]
         pm.lyrics.append(pretty_midi.Lyric("Epoch " + str(epoch), 0))
         pm.lyrics.append(pretty_midi.Lyric(input_basename, 1/(measures[0].tempo * (1/60))))
         pm.write(SAVE_FOLDER + "/e%d/from/" % epoch + input_basename + ".mid")
@@ -82,7 +83,7 @@ elif args.action == "loss":
 
         df = pandas.read_csv(SAVE_FOLDER + "/stats/epochs-%d-to-%d.csv" % (from_, to))
         losses = df['loss']
-        epochs = df['epochs']
+        epochs = df['epoch']
 
         plt.figure()
         plt.title("Epochs %d to %d" % (from_, to))
@@ -92,16 +93,16 @@ elif args.action == "loss":
         plt.show()
 
 elif args.action == "show-code":
-    if args.file is None:
-        print("--file must be specified")    
+    if mxl_file is None:
+        print("--file or --piece must be specified")    
     else:
-        piece = notes.mxl.parse_file(args.file)
+        piece = notes.mxl.parse_file(mxl_file)
         codes: List[List[float]] = []
         for measure in piece.measures:
             code = model.encode(notes.tensor.to_tensor(measure))
             codes.append([codeitem.item() for codeitem in code])
         df = pandas.DataFrame(codes)
-        filepath = SAVE_FOLDER + "/e" + str(epoch) + "/codes/" + basename(args.file) + ".csv"
+        filepath = SAVE_FOLDER + "/e" + str(epoch) + "/codes/" + basename(mxl_file) + ".csv"
         df.to_csv(filepath)
         print("Saved to: " + filepath)
         unused = set(range(0, 120))
