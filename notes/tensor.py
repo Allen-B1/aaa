@@ -16,7 +16,10 @@ def to_tensor(measure: Measure) -> torch.Tensor:
     return tensor
 
 def from_tensor(tensor: torch.Tensor, min_duration=0.125) -> Measure:
-    time_sig = (max(2, int(round(tensor[48][0].item()))), int(2**round(math.log2(tensor[48][1].item()))))
+    time_sig_num = max(2, int(round(tensor[48][0].item())))
+    time_sig_den = int(2**round(math.log2(max(tensor[48][1].item(), 2))))
+    time_sig = (time_sig_num, time_sig_den)
+    
     beats = time_sig[0] / time_sig[1] * 4
     tempo = max(24, tensor[48][2].item())
 

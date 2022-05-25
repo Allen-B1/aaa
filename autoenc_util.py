@@ -12,10 +12,8 @@ import random
 import pandas
 import matplotlib.pyplot as plt
 
-MODEL = autoenc.SAVE_FOLDER + "/model-20000.pt"
+MODEL = autoenc.SAVE_FOLDER + "/model-1000.pt"
 SAVE_FOLDER = autoenc.SAVE_FOLDER
-model, epoch = autoenc.load(MODEL, "cpu")
-model.eval()
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
 parser.add_argument("action", metavar="ACTION", type=str, help="Action to take [gen-file, gen-rand]")
@@ -26,6 +24,9 @@ parser.add_argument("--epoch", type=int, help="Epoch number of stats file", defa
 parser.add_argument("--epoch-to", type=int, help="Epoch number of stats file", default=None)
 parser.add_argument("--measure-num", type=int, default=1)
 args = parser.parse_args()
+
+model, epoch = autoenc.load(MODEL, "cpu")
+model.eval()
 
 try:
     os.makedirs(SAVE_FOLDER + "/e%d/rand" % epoch)
