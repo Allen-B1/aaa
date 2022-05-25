@@ -67,7 +67,7 @@ class AutoEncoderV13(AutoEncoder):
         return x
 
     def version(self) -> int:
-        return 12
+        return 13
 
 class AutoEncoderV12(AutoEncoder):
     def __init__(self):
