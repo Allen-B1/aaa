@@ -22,6 +22,38 @@ class AutoEncoder(nn.Module, ABC):
     @abstractmethod
     def version(self) -> int: pass
 
+class AutoEncoderV12(AutoEncoder):
+    def __init__(self):
+        self.conv1 = nn.Conv2d(1, 4, (48/4, 8), stride=(48/12, 1))
+        self.flatten1 = nn.Flatten()
+        self.dense1 = nn.Linear(2112, 120)
+        self.dense2 = nn.Linear(120, 2112)
+        self.unflatten2 = nn.Unflatten(1, (4, 49, 88))
+        self.conv2 = nn.ConvTranspose2d(4, 1, (48/4, 8), stride=(48/12, 1))
+
+    def encode(self, x: torch.Tensor) -> torch.Tensor:
+        x = F.elu(self.conv1(x))
+        x = self.flatten1(x)
+        x = F.elu(self.dense1(x))
+        return x
+    
+    def decode(self, x: torch.Tensor) -> torch.Tensor:
+        x = F.elu(self.dense2(x))
+        x = self.unflatten2(x)
+        x = self.conv2(x)
+        return x
+    
+    def decode_regularize(self, x: torch.Tensor) -> torch.Tensor:
+        return F.relu(self.decode(x))
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.encode(x)
+        x = self.decode(x)
+        return x
+
+    def version(self) -> int:
+        return 12
+
 class AutoEncoderV10(AutoEncoder):
     def __init__(self):
         nn.Module.__init__(self)
@@ -88,11 +120,21 @@ class AutoEncoderV11(AutoEncoder):
 
     def version(self) -> int:
         return 11
+    
+def new_version(version: int) -> AutoEncoder:
+    if version == 10:
+        return AutoEncoderV10()
+    elif version == 11:
+        return AutoEncoderV11()
+    elif version == 12:
+        return AutoEncoderV12()
+    else:
+        raise Exception("unknown autoencoder version")
 
 def load(file: str, device: str='cuda') -> Tuple[AutoEncoder, int]:
     save = torch.load(file, map_location=torch.device(device))
     version = save['version']
-    autoenc = (AutoEncoderV10() if version == 10 else (AutoEncoderV11() if version == 11 else cast(AutoEncoder, None))).to(device)
+    autoenc = new_version(version).to(device)
     autoenc.load_state_dict(save["model"])
     epoch = save["epoch"]
     return (autoenc, epoch)
@@ -135,7 +177,7 @@ if __name__ == "__main__":
         print("Loading: " + args.in_label)
         print("Epoch: " + str(epoch_num))
     else:
-        autoenc, epoch_num = AutoEncoderV11() if VERSION == 11 else AutoEncoderV10(), 0
+        autoenc, epoch_num = new_version(VERSION), 0
         autoenc.to("cuda")
         print("Initializing new autoencoder")
 
