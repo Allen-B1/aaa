@@ -308,7 +308,7 @@ if __name__ == "__main__":
     epochs = list(map(lambda t: t[0], losses))
     train_losses = list(map(lambda t: t[1], losses))
     test_losses = list(map(lambda t: t[2], losses))
-    df = pandas.DataFrame({"epoch": epochs, "train_loss": train_losses, "loss": test_losses})
+    df = pandas.DataFrame({"epoch": epochs, "loss": train_losses, "test_loss": test_losses})
     df.set_index("epoch")
     multi_csv_file = "/stats/epochs-" + str(epoch_num - args.epochs + 1) + "-to-" + str(epoch_num) + ".csv"
     df.to_csv(SAVE_FOLDER + multi_csv_file)

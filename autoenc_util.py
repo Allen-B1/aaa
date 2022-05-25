@@ -76,7 +76,9 @@ elif args.action == "loss":
         df.sort_values('epoch')
         plt.figure()
         plt.title("Epochs vs Loss")
-        plt.plot(df['epoch'], df['loss'])
+        plt.plot(df['epoch'], df['loss'], label='Train')
+        if 'test_loss' in df:
+            plt.plot(df['epoch'], df['test_loss'], label='Test')
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
         plt.show()
@@ -96,12 +98,11 @@ elif args.action == "loss":
         to: int = args.epoch_to
 
         df = pandas.read_csv(SAVE_FOLDER + "/stats/epochs-%d-to-%d.csv" % (from_, to))
-        losses = df['loss']
-        epochs = df['epoch']
-
         plt.figure()
         plt.title("Epochs %d to %d" % (from_, to))
-        plt.plot(epochs, losses)
+        plt.plot(df['epoch'], df['loss'], label='Train')
+        if 'test_loss' in df:
+            plt.plot(df['epoch'], df['test_loss'], label='Test')
         plt.xlabel("Epoch #")
         plt.ylabel("Loss")
         plt.show()
