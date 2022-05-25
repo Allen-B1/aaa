@@ -213,9 +213,13 @@ def save(autoenc: AutoEncoder, epoch: int, file: str):
 if __name__ == "__main__":
     from torch.utils.data import Dataset, DataLoader
     class AutoEncDataset(Dataset):
-        def __init__(self):
+        def __init__(self, split: str):
             self.data = preprocess.load("saves/preprocessed.pt")
-            self.data = [(a, b, c, measure.to("cuda" if torch.cuda.is_available() else "cpu")) for (a, b, c, measures) in self.data for measure in measures]
+            filter = (lambda x: x % 5 != 0) if split == "train" else (lambda x: x % 5 == 0)
+            self.data = [(a, b, c, measure.to("cuda" if torch.cuda.is_available() else "cpu"))
+                for (a, b, c, measures) in self.data
+                for measure_num, measure in measures
+                if filter(measure_num)]
 
         def __len__(self) -> int:
             return len(self.data)
@@ -244,15 +248,17 @@ if __name__ == "__main__":
         autoenc.to("cuda" if torch.cuda.is_available() else "cpu")
         print("Initializing new autoencoder")
 
-    ds = AutoEncDataset()
+    ds = AutoEncDataset("train")
+    ds_test = AutoEncDataset("test")
 
     start_time = time.perf_counter()
 
     # training loop
     optimizer = torch.optim.Adam(autoenc.parameters(), lr=args.learning_rate)
-    losses_within_epoch: List[float] = []
-    losses_epochs: List[Tuple[int, float]] = []
+    losses: List[Tuple[int, float, float]] = []
     for i in range(args.epochs):
+        # train
+        autoenc.train()
         dl = DataLoader(ds, batch_size=64, shuffle=True)
         losses_within_epoch = []
         for batch_num, measures in enumerate(dl):
@@ -268,8 +274,20 @@ if __name__ == "__main__":
 
             print("[E%02d][B%03d] loss: %f" % (epoch_num + 1, batch_num, loss), end="\n" if batch_num % 100 == 0 else '\r')
 
-        avg_loss = sum(losses_within_epoch) / len(losses_within_epoch)
-        losses_epochs.append((epoch_num + 1, avg_loss))
+        avg_train_loss = sum(losses_within_epoch) / len(losses_within_epoch)
+
+        # test loss
+        autoenc.eval()
+        dl_test = DataLoader(ds_test)
+        test_losses_within_epoch = []
+        for measures in dl_test:
+            pred = autoenc(measures)
+            pred = torch.reshape(pred, (-1, 49, 88))
+            loss = F.mse_loss(pred, measures)
+            test_losses_within_epoch.append(loss.item())
+
+        avg_test_loss = sum(test_losses_within_epoch) / len(test_losses_within_epoch)
+        losses.append((epoch_num + 1, avg_train_loss, avg_test_loss))
 
         epoch_num += 1
 
@@ -287,8 +305,10 @@ if __name__ == "__main__":
     df.to_csv(SAVE_FOLDER + "/stats/epoch-" + str(epoch_num) + ".csv")
     print("Saved stats file in stats/epoch-" + str(epoch_num) + ".csv")
 
-    epochs = list(map(lambda t: t[0], losses_epochs))
-    losses = list(map(lambda t: t[1], losses_epochs))
-    df = pandas.DataFrame({"epoch": epochs, "loss": losses})
+    epochs = list(map(lambda t: t[0], losses))
+    train_losses = list(map(lambda t: t[1], losses))
+    test_losses = list(map(lambda t: t[2], losses))
+    df = pandas.DataFrame({"epoch": epochs, "train_loss": train_losses, "loss": test_losses})
+    df.set_index("epoch")
     multi_csv_file = "/stats/epochs-" + str(epoch_num - args.epochs + 1) + "-to-" + str(epoch_num) + ".csv"
     df.to_csv(SAVE_FOLDER + multi_csv_file)
