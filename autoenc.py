@@ -27,24 +27,28 @@ class AutoEncoderV12(AutoEncoder):
         nn.Module.__init__(self)
 
         # (48/4, 8) ; (48/12, 1)
-        self.conv1 = nn.Conv2d(1, 4, (12, 8), stride=(4, 1))
-        self.flatten1 = nn.Flatten()
-        self.dense1 = nn.Linear(4 * 10 * 81, 120)
-        self.dense2 = nn.Linear(120, 4 * 10 * 81)
-        self.unflatten2 = nn.Unflatten(1, (4, 10, 81))
-        self.conv2 = nn.ConvTranspose2d(4, 1, (12, 8), stride=(4, 1),output_padding=(1,0))
+        self.conv1 = nn.Conv2d(1, 4, (4, 4))
+        self.conv2 = nn.Conv2d(4, 4, (4, 3), stride=(2, 3))
+        self.flatten = nn.Flatten()
+        self.deflatten = nn.Unflatten(1, (4, 22, 28))
+        self.deconv1 = nn.ConvTranspose2d(4, 4, (4, 3), stride=(2,3), output_padding=(0, 1))
+        self.deconv2 = nn.ConvTranspose2d(4, 1, (4, 4))
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
         x = x.unsqueeze(1)
         x = F.elu(self.conv1(x))
-        x = self.flatten1(x)
-        x = F.elu(self.dense1(x))
+#        print(x.shape)
+        x = F.elu(self.conv2(x))
+#        print(x.shape)
+        x = self.flatten(x)
         return x
     
     def decode(self, x: torch.Tensor) -> torch.Tensor:
-        x = F.elu(self.dense2(x))
-        x = self.unflatten2(x)
-        x = self.conv2(x)
+        x = self.deflatten(x)
+        x = F.elu(self.deconv1(x))
+#        print(x.shape)
+        x = self.deconv2(x)
+#        print(x.shape)
         return x
     
     def decode_regularize(self, x: torch.Tensor) -> torch.Tensor:
