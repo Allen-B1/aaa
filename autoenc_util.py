@@ -1,4 +1,5 @@
 import argparse
+import glob
 from posixpath import basename
 from typing import List, Union
 import notes.mxl, notes.tensor, notes.midi
@@ -11,7 +12,7 @@ import random
 import pandas
 import matplotlib.pyplot as plt
 
-MODEL = autoenc.SAVE_FOLDER + "/model-500.pt"
+MODEL = autoenc.SAVE_FOLDER + "/model-1000.pt"
 SAVE_FOLDER = autoenc.SAVE_FOLDER
 model, epoch = autoenc.load(MODEL, "cpu")
 model.eval()
@@ -21,7 +22,7 @@ parser.add_argument("action", metavar="ACTION", type=str, help="Action to take [
 parser.add_argument("--file", type=str, help="File", default=None)
 parser.add_argument("--piece", type=str, help="Piece from the midide dataset", default=None)
 parser.add_argument("--measures", type=int, help="Number of measures to generate", default=32)
-parser.add_argument("--epoch", type=int, help="Epoch number of stats file", default=1)
+parser.add_argument("--epoch", type=int, help="Epoch number of stats file", default=None)
 parser.add_argument("--epoch-to", type=int, help="Epoch number of stats file", default=None)
 parser.add_argument("--measure-num", type=int, default=1)
 args = parser.parse_args()
@@ -68,7 +69,17 @@ elif args.action == "gen-rand":
     print("Genereated " + id + ".mid")
     pm.write(SAVE_FOLDER + "/e%d/rand/" % epoch + id + ".mid")
 elif args.action == "loss":
-    if args.epoch_to == None:
+    if args.epoch == None:
+        files = glob.glob(SAVE_FOLDER + "/stats/epochs-*-to-*.csv")
+        df = pandas.concat([pandas.read_csv(file) for file in files])
+        df.sort_values('epoch')
+        plt.figure()
+        plt.title("Epochs vs Loss")
+        plt.plot(df['epoch'], df['loss'])
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.show()
+    elif args.epoch_to == None:
         stats_file = SAVE_FOLDER + "/stats/epoch-" + str(args.epoch) + ".csv"
         df = pandas.read_csv(stats_file)
         losses = df['loss']

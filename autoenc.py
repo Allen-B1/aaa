@@ -126,6 +126,7 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, help="Number of epochs to train (default: 1)", default=1)
     parser.add_argument("--in-label", type=str, help="Model label to resume from", default=None)
     parser.add_argument("--out-label", type=str, help="Model label to write to", required=True)
+    parser.add_argument("--learning-rate", type=float, help="Learning rate of Adam optimizer", default=1e-4)
     args = parser.parse_args()
 
     if args.in_label is not None:
@@ -143,7 +144,7 @@ if __name__ == "__main__":
     start_time = time.perf_counter()
 
     # training loop
-    optimizer = torch.optim.Adam(autoenc.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(autoenc.parameters(), lr=args.learning_rate)
     losses_within_epoch: List[float] = []
     losses_epochs: List[Tuple[int, float]] = []
     for i in range(args.epochs):
