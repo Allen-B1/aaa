@@ -24,15 +24,18 @@ class AutoEncoder(nn.Module, ABC):
 
 class AutoEncoderV12(AutoEncoder):
     def __init__(self):
+        nn.Module.__init__(self)
+
         # (48/4, 8) ; (48/12, 1)
         self.conv1 = nn.Conv2d(1, 4, (12, 8), stride=(4, 1))
         self.flatten1 = nn.Flatten()
-        self.dense1 = nn.Linear(2112, 120)
-        self.dense2 = nn.Linear(120, 2112)
-        self.unflatten2 = nn.Unflatten(1, (4, 49, 88))
-        self.conv2 = nn.ConvTranspose2d(4, 1, (12, 8), stride=(4, 1))
+        self.dense1 = nn.Linear(4 * 10 * 81, 120)
+        self.dense2 = nn.Linear(120, 4 * 10 * 81)
+        self.unflatten2 = nn.Unflatten(1, (4, 10, 81))
+        self.conv2 = nn.ConvTranspose2d(4, 1, (12, 8), stride=(4, 1),output_padding=(1,0))
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
+        x = x.unsqueeze(1)
         x = F.elu(self.conv1(x))
         x = self.flatten1(x)
         x = F.elu(self.dense1(x))
@@ -173,13 +176,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.in_label is not None:
-        autoenc, epoch_num = load(SAVE_FOLDER + "/" + args.in_label + ".pt")
+        autoenc, epoch_num = load(SAVE_FOLDER + "/" + args.in_label + ".pt", "cuda" if torch.cuda.is_available() else "cpu")
         assert autoenc.version() == VERSION
         print("Loading: " + args.in_label)
         print("Epoch: " + str(epoch_num))
     else:
         autoenc, epoch_num = new_version(VERSION), 0
-        autoenc.to("cuda")
+        autoenc.to("cuda" if torch.cuda.is_available() else "cpu")
         print("Initializing new autoencoder")
 
     ds = AutoEncDataset()
