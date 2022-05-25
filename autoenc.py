@@ -31,9 +31,9 @@ class AutoEncoderV13(AutoEncoder):
         self.conv1 = nn.Conv2d(1, 8, (3, 3))
         self.conv2 = nn.Conv2d(8, 4, (4, 4))
         self.flatten = nn.Flatten()
-        self.dense = nn.Linear(4 * 43 * 83, 120)
-        self.dedense = nn.Linear(120, 4 * 43 * 83)
-        self.deflatten = nn.Unflatten(1, (4, 43, 83))
+        self.dense = nn.Linear(4 * 44 * 83, 120)
+        self.dedense = nn.Linear(120, 4 * 44 * 83)
+        self.deflatten = nn.Unflatten(1, (4, 44, 83))
         self.deconv1 = nn.ConvTranspose2d(4, 8, (4, 4))
         self.deconv2 = nn.ConvTranspose2d(8, 1, (3, 3))
 
