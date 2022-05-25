@@ -12,7 +12,7 @@ import random
 import pandas
 import matplotlib.pyplot as plt
 
-MODEL = autoenc.SAVE_FOLDER + "/model-500.pt"
+MODEL = autoenc.SAVE_FOLDER + "/model-100.pt"
 SAVE_FOLDER = autoenc.SAVE_FOLDER
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
