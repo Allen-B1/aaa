@@ -12,7 +12,7 @@ import random
 import pandas
 import matplotlib.pyplot as plt
 
-MODEL = autoenc.SAVE_FOLDER + "/model-1000.pt"
+MODEL = autoenc.SAVE_FOLDER + "/model-500.pt"
 SAVE_FOLDER = autoenc.SAVE_FOLDER
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
@@ -58,7 +58,7 @@ if args.action == "gen-file":
         pm.write(SAVE_FOLDER + "/e%d/from/" % epoch + input_basename + ".mid")
 
 elif args.action == "gen-rand":
-    code = torch.rand(args.measures, 120)
+    code = torch.rand(args.measures, 64)
     measures_tensor = torch.reshape(model.decode_regularize(code), (-1, 49, 88))
     measures = [notes.tensor.from_tensor(measure_tensor) for measure_tensor in measures_tensor]
     encoded_piece = Piece(measures=measures, parts=['piano'])

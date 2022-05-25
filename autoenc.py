@@ -29,12 +29,12 @@ class AutoEncoderV13(AutoEncoder):
         # [49, 88]
         # (48/4, 8) ; (48/12, 1)
         self.conv1 = nn.Conv2d(1, 8, (4, 4))
-        self.conv2 = nn.Conv2d(8, 8, (4, 3), stride=(2, 1), padding=(0, 2))
+        self.conv2 = nn.Conv2d(8, 4, (4, 3), padding=(0, 2))
         self.flatten = nn.Flatten()
-        self.dense = nn.Linear(8 * 22 * 87, 64)
-        self.dedense = nn.Linear(64, 8 * 22 * 87)
-        self.deflatten = nn.Unflatten(1, (8, 22, 87))
-        self.deconv1 = nn.ConvTranspose2d(8, 8, (4, 3), stride=(2, 1), padding=(0, 2))
+        self.dense = nn.Linear(4 * 43 * 87, 80)
+        self.dedense = nn.Linear(80, 4 * 43 * 87)
+        self.deflatten = nn.Unflatten(1, (4, 43, 87))
+        self.deconv1 = nn.ConvTranspose2d(4, 8, (4, 3), padding=(0, 2))
         self.deconv2 = nn.ConvTranspose2d(8, 1, (4, 4))
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
@@ -215,10 +215,10 @@ if __name__ == "__main__":
     class AutoEncDataset(Dataset):
         def __init__(self, split: str):
             self.data = preprocess.load("saves/preprocessed.pt")
-            filter = (lambda x: x % 5 != 0) if split == "train" else (lambda x: x % 5 == 0)
+            filter = (lambda x: x % 11 != 0) if split == "train" else (lambda x: x % 11 == 0)
             self.data = [(a, b, c, measure.to("cuda" if torch.cuda.is_available() else "cpu"))
                 for (a, b, c, measures) in self.data
-                for measure_num, measure in measures
+                for measure_num, measure in enumerate(measures)
                 if filter(measure_num)]
 
         def __len__(self) -> int:
