@@ -29,12 +29,12 @@ class AutoEncoderV13(AutoEncoder):
         # [49, 88]
         # (48/4, 8) ; (48/12, 1)
         self.conv1 = nn.Conv2d(1, 8, (4, 4))
-        self.conv2 = nn.Conv2d(8, 4, (4, 3), padding=(0, 2))
+        self.conv2 = nn.Conv2d(8, 4, (4, 3))
         self.flatten = nn.Flatten()
-        self.dense = nn.Linear(4 * 43 * 87, 80)
-        self.dedense = nn.Linear(80, 4 * 43 * 87)
-        self.deflatten = nn.Unflatten(1, (4, 43, 87))
-        self.deconv1 = nn.ConvTranspose2d(4, 8, (4, 3), padding=(0, 2))
+        self.dense = nn.Linear(4 * 43 * 83, 80)
+        self.dedense = nn.Linear(80, 4 * 43 * 83)
+        self.deflatten = nn.Unflatten(1, (4, 43, 83))
+        self.deconv1 = nn.ConvTranspose2d(4, 8, (4, 3))
         self.deconv2 = nn.ConvTranspose2d(8, 1, (4, 4))
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
