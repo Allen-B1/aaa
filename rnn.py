@@ -77,6 +77,8 @@ if __name__ == "__main__":
         model.train()
         train_losses: List[float] = []
         for x, y in train_dl:
+            x = x.to("cuda")
+            y = y.to("cuda")
             pred = model(x)
             loss = F.mse_loss(pred, y)
 
@@ -89,6 +91,8 @@ if __name__ == "__main__":
         model.eval()
         test_losses: List[float] = []
         for x, y in test_dl:
+            x = x.to("cuda")
+            y = y.to("cuda")
             pred = model(x)
             loss = F.mse_loss(pred, y)
             test_losses.append(loss.item())
