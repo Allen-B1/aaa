@@ -101,6 +101,6 @@ if __name__ == "__main__":
         avg_test_loss = sum(test_losses) / len(test_losses)
         print("[E%d] Train: %f | Test: %f" % (n_epoch + initial_epoch +1, avg_train_loss, avg_test_loss))
 
-    print("Trained " + int(args.epochs))
+    print("Trained " + str(args.epochs))
     model.save(SAVE_FOLDER + "/" + args.out_label + ".pt", initial_epoch + args.epochs, autoenc_version)
     print("Saved to " + args.out_label)
