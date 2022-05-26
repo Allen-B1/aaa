@@ -62,6 +62,7 @@ if __name__ == "__main__":
         assert autoenc_version_ == autoenc_version
     else:
         model = MeasurePredictor()
+        model.to("cuda")
         initial_epoch = 0
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
