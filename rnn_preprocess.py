@@ -11,7 +11,7 @@ if __name__ == "__main__":
     MODEL = autoenc.SAVE_FOLDER + "/model-2000.pt"
 
     print("Loading model...")
-    autoenc_model, version = autoenc.load(MODEL, "cpu")
+    autoenc_model, epochs = autoenc.load(MODEL, "cpu")
     autoenc_model.eval()
     with torch.no_grad():
         pieces = preprocess.load("saves/preprocessed.pt")
@@ -26,5 +26,5 @@ if __name__ == "__main__":
 
         torch.save({
             "measures": processed,
-            "autoenc_version": version
+            "autoenc_version": autoenc_model.version()
         }, "saves/preprocessed-rnn.pt")

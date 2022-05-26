@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -15,10 +15,15 @@ class MeasurePredictor(nn.Module):
         x, _ = self.lstm(x)
         x = self.hidden2next(x)
         return x
+    
+    def predict(self, x: torch.Tensor, hidden: Union[Tuple[torch.Tensor, torch.Tensor], None]) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+        x, hidden2 = self.lstm(x.unsqueeze(0), hidden)
+        x = self.hidden2next(x)
+        return x, hidden2
 
     @staticmethod
-    def load(f: str) -> Tuple['MeasurePredictor', int, int]:
-        save = torch.load(f)
+    def load(f: str, device: str = "cuda") -> Tuple['MeasurePredictor', int, int]:
+        save = torch.load(f, map_location=torch.device(device))
         model = MeasurePredictor()
         model.load_state_dict(save['model'])
         return model, save['epoch'], save['autoenc_version']
