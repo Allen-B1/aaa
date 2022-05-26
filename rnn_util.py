@@ -8,7 +8,7 @@ import os.path
 
 AUTOENC_MODEL = "saves/autoenc/trial-13/model-2000.pt"
 RNN_SAVE_FOLDER = "saves/rnn/trial-2"
-RNN_MODEL = RNN_SAVE_FOLDER + "/hi-500.pt"
+RNN_MODEL = RNN_SAVE_FOLDER + "/model-50.pt"
 
 def get_mxl(args: argparse.Namespace) -> str:
     if 'piece' in vars(args):
