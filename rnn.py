@@ -8,8 +8,8 @@ import rnn_preprocess
 class MeasurePredictor(nn.Module):
     def __init__(self):
         nn.Module.__init__(self)
-        self.lstm = nn.LSTM(120, 384, batch_first=True)
-        self.hidden2next = nn.Linear(384, 120)
+        self.lstm = nn.LSTM(120, hidden_size=120, batch_first=True)
+        self.hidden2next = nn.Linear(120, 120)
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x, _ = self.lstm(x)
@@ -46,7 +46,7 @@ class MeasurePredictorDataset(Dataset):
         piece = self.pieces[idx]
         return piece[:len(piece)-1], piece[1:]
 
-SAVE_FOLDER = "saves/rnn"
+SAVE_FOLDER = "saves/rnn/trial-2"
 
 if __name__ == "__main__":
     import argparse

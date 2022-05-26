@@ -7,7 +7,8 @@ import notes.mxl, notes.tensor, notes.midi
 import os.path
 
 AUTOENC_MODEL = "saves/autoenc/trial-13/model-2000.pt"
-RNN_MODEL = "saves/rnn/hi-500.pt"
+RNN_SAVE_FOLDER = "saves/rnn/trial-2"
+RNN_MODEL = RNN_SAVE_FOLDER + "/hi-500.pt"
 
 def get_mxl(args: argparse.Namespace) -> str:
     if 'piece' in vars(args):
@@ -39,7 +40,7 @@ def gen_file(args: argparse.Namespace):
     measures = [notes.tensor.from_tensor(measure[0]) for measure in measures_tensor]
     piece = Piece(measures, parts=["piano"])
     pm = notes.midi.to_midi(piece)
-    pm.write("saves/rnn/" + os.path.splitext(os.path.basename(mxl))[0] + ".mid")
+    pm.write(RNN_SAVE_FOLDER + "/" + os.path.splitext(os.path.basename(mxl))[0] + ".mid")
 
 parser = argparse.ArgumentParser()
 subcommands = parser.add_subparsers(help="possible commands", required=True)
