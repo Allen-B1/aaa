@@ -13,18 +13,18 @@ if __name__ == "__main__":
     print("Loading model...")
     autoenc_model, version = autoenc.load(MODEL, "cpu")
     autoenc_model.eval()
+    with torch.no_grad():
+        pieces = preprocess.load("saves/preprocessed.pt")
+        processed: List[torch.Tensor] = []
+        for n, (a, b, c, tensor) in enumerate(pieces):
+            print("Encoding %d/%d items..." % (n, len(pieces)), end='\r')
+            x = autoenc_model.encode(tensor)
+            assert x.shape[1] == 120
+            processed.append(x)
 
-    pieces = preprocess.load("saves/preprocessed.pt")
-    processed: List[torch.Tensor] = []
-    for n, (a, b, c, tensor) in enumerate(pieces):
-        print("Encoding %d/%d items..." % (n, len(pieces)), end='\r')
-        x = autoenc_model.encode(tensor)
-        assert x.shape[1] == 120
-        processed.append(x)
+        print("Done processing!")
 
-    print("Done processing!")
-
-    torch.save({
-        "measures": processed,
-        "autoenc_version": version
-    }, "saves/preprocessed-rnn.pt")
+        torch.save({
+            "measures": processed,
+            "autoenc_version": version
+        }, "saves/preprocessed-rnn.pt")

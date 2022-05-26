@@ -257,9 +257,11 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(autoenc.parameters(), lr=args.learning_rate)
     losses: List[Tuple[int, float, float]] = []
     for i in range(args.epochs):
+        dl = DataLoader(ds, batch_size=64, shuffle=True)
+        dl_test = DataLoader(ds_test, batch_size=64, shuffle=True)
+
         # train
         autoenc.train()
-        dl = DataLoader(ds, batch_size=64, shuffle=True)
         losses_within_epoch = []
         for batch_num, measures in enumerate(dl):
             pred = autoenc(measures)
@@ -278,7 +280,6 @@ if __name__ == "__main__":
 
         # test loss
         autoenc.eval()
-        dl_test = DataLoader(ds_test)
         test_losses_within_epoch = []
         for measures in dl_test:
             pred = autoenc(measures)

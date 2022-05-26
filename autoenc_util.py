@@ -12,14 +12,14 @@ import random
 import pandas
 import matplotlib.pyplot as plt
 
-MODEL = autoenc.SAVE_FOLDER + "/model-1000.pt"
+MODEL = autoenc.SAVE_FOLDER + "/model-2000.pt"
 SAVE_FOLDER = autoenc.SAVE_FOLDER
 
 parser = argparse.ArgumentParser(description="Utilities for autoenc")
 parser.add_argument("action", metavar="ACTION", type=str, help="Action to take [gen-file, gen-rand]")
 parser.add_argument("--file", type=str, help="File", default=None)
 parser.add_argument("--piece", type=str, help="Piece from the midide dataset", default=None)
-parser.add_argument("--measures", type=int, help="Number of measures to generate", default=16)
+parser.add_argument("--measures", type=int, help="Number of measures to generate", default=8)
 parser.add_argument("--epoch", type=int, help="Epoch number of stats file", default=None)
 parser.add_argument("--epoch-to", type=int, help="Epoch number of stats file", default=None)
 parser.add_argument("--measure-num", type=int, default=1)
