@@ -52,8 +52,9 @@ class MeasurePredictor(nn.Module):
 	
 def load(f: str, device:str='cuda') -> Tuple[MeasurePredictor, int]:
 	s = torch.load(f, to=torch.device(device))
-	model = MeasurePredictor().to(device)
+	model = MeasurePredictor()
 	model.load_state_dict(s['model'])
+	model = model.to(device)
 	return model, s['epoch']
 
 def save(f: str, model: MeasurePredictor, epochs: int):
