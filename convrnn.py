@@ -54,7 +54,12 @@ def save(f: str, model: MeasurePredictor, epochs: int):
 		"epoch": epochs
 	}, f)
 
-SAVE_FOLDER = "saves/convrnn/trial-3"
+SAVE_FOLDER = "saves/convrnn/trial-4"
+
+import os
+try:
+    os.makedirs(SAVE_FOLDER + "/stats")
+except FileExistsError: pass
 
 if __name__ == "__main__":
 	import argparse

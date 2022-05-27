@@ -13,4 +13,3 @@ def add_musicxml(parser: argparse.ArgumentParser):
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--midide", help="MusicXML from the midide dataset to load", type=str)
     group.add_argument("--file", help="File to load", type=str)
-
