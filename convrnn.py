@@ -137,10 +137,12 @@ if __name__ == "__main__":
 		print("[E%d] train %f | test %f" % (epochs + n_epochs + 1, sum(train_losses) / len(train_losses), sum(test_losses) / len(test_losses)))
 		losses.append((epochs + n_epochs + 1, sum(train_losses) / len(train_losses), sum(test_losses) / len(test_losses)))
 
+	save(SAVE_FOLDER + "/" + args.out_label + ".pt", model, epochs + args.epochs)
+
 	import pandas
 	df = pandas.DataFrame({
 		"epoch": [loss[0] for loss in losses],
 		"loss": [loss[1] for loss in losses],
 		"test_loss": [loss[2] for loss in losses],
 	})
-	df.to_csv(SAVE_FOLDER + "/stats/epochs-%d-to-%d.csv" % (epochs + 1, epochs + args.epochs + 1))
+	df.to_csv(SAVE_FOLDER + "/stats/epochs-%d-to-%d.csv" % (epochs + 1, epochs + args.epochs))
