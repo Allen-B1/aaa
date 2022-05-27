@@ -15,7 +15,7 @@ class MeasurePredictor(nn.Module):
 		nn.Module.__init__(self)
 		self.flatten = nn.Flatten()
 		self.dense = nn.Linear(49*88, 512)
-		self.lstm = nn.LSTM(input_size=512, hidden_size=512, batch_first=True)
+		self.lstm = nn.LSTM(input_size=512, hidden_size=512, batch_first=True, num_layers=3)
 		self.dedense = nn.Linear(512, 49*88)
 
 	# input: tensor [-1, 49, 88]
