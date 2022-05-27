@@ -21,7 +21,10 @@ class MeasurePredictor(nn.Module):
 		self.deconv1 = nn.ConvTranspose2d(4, 8, (4, 4))
 		self.deconv2 = nn.ConvTranspose2d(8, 1, (3, 3))
 
+	# input: tensor [-1, 49, 88]
+	# output: tensor [-1, 49, 88]
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
+		x = torch.reshape(x, (-1, 1, 49, 88))
 		x = self.conv1(x)
 		x = self.conv2(x)
 		x = self.flatten(x)
@@ -29,9 +32,14 @@ class MeasurePredictor(nn.Module):
 		x = self.deflatten(x)
 		x = self.deconv1(x)
 		x = self.deconv2(x)
+		x = torch.reshape(x, (-1, 49, 88))
 		return x
 	
+	# predict next measure given one measure
+	# input: tensor [49, 88]
+	# output: tensor [49, 88]
 	def predict(self, x: torch.Tensor, hidden: Union[Tuple[torch.Tensor, torch.Tensor], None]) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+		x = torch.reshape(x, (1, 1, 49, 88))
 		x = self.conv1(x)
 		x = self.conv2(x)
 		x = self.flatten(x)
@@ -39,6 +47,7 @@ class MeasurePredictor(nn.Module):
 		x = self.deflatten(x)
 		x = self.deconv1(x)
 		x = self.deconv2(x)
+		x = torch.reshape(x, (49, 88))
 		return x, hidden_
 	
 def load(f: str, device:str='cuda') -> Tuple[MeasurePredictor, int]:
@@ -66,13 +75,15 @@ if __name__ == "__main__":
 	import preprocess
 	pieces  = preprocess.load("saves/preprocessed.pt")
 
+	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 	from torch.utils.data import Dataset, DataLoader
 	class PieceDataset(Dataset):
 		def __init__(self, pieces: List[Tuple[str, str, int, torch.Tensor]]):
 			self.pieces = [t[3] for t in pieces]
 		
 		def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
-			return self.pieces[idx][:len(self.pieces[idx])-1].to("cuda"), self.pieces[idx][1:].to("cuda")
+			return self.pieces[idx][:len(self.pieces[idx])-1].to(device), self.pieces[idx][1:].to(device)
 		
 		def __len__(self) -> int:
 			return len(self.pieces)
@@ -81,7 +92,7 @@ if __name__ == "__main__":
 	test_ds = PieceDataset([piece for i, piece in enumerate(pieces) if i % 11 == 0])
 
 	if args.in_label is not None:
-		model, epochs = load(SAVE_FOLDER + "/" + args.in_label + ".pt")
+		model, epochs = load(SAVE_FOLDER + "/" + args.in_label + ".pt", device.type)
 	else:
 		model = MeasurePredictor()
 		epochs = 0
@@ -95,6 +106,8 @@ if __name__ == "__main__":
 
 		train_losses = []
 		for x, y in train_dl:
+			x = torch.squeeze(x)
+			y = torch.squeeze(y)
 			pred = model(x)
 			loss = F.mse_loss(pred, y)
 
@@ -106,6 +119,8 @@ if __name__ == "__main__":
 		
 		test_losses = []
 		for x, y in test_dl:
+			x = torch.squeeze(x)
+			y = torch.squeeze(y)
 			pred = model(x)
 			loss = F.mse_loss(pred, y)
 			test_losses.append(loss.item())
