@@ -94,7 +94,7 @@ if __name__ == "__main__":
 		test_dl = DataLoader(test_ds, batch_size=1, shuffle=True)
 
 		train_losses = []
-		for x, y in enumerate(train_dl):
+		for x, y in train_dl:
 			pred = model(x)
 			loss = F.mse_loss(pred, y)
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
 			train_losses.append(loss.item())
 		
 		test_losses = []
-		for x, y in enumerate(test_dl):
+		for x, y in test_dl:
 			pred = model(x)
 			loss = F.mse_loss(pred, y)
 			test_losses.append(loss.item())
