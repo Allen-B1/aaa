@@ -95,7 +95,7 @@ if __name__ == "__main__":
 	if args.in_label is not None:
 		model, epochs = load(SAVE_FOLDER + "/" + args.in_label + ".pt", device.type)
 	else:
-		model = MeasurePredictor()
+		model = MeasurePredictor().to(device)
 		epochs = 0
 
 	optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
