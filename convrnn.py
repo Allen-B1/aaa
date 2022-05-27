@@ -57,7 +57,7 @@ class MeasurePredictor(nn.Module):
 		return x, hidden_
 	
 def load(f: str, device:str='cuda') -> Tuple[MeasurePredictor, int]:
-	s = torch.load(f, to=torch.device(device))
+	s = torch.load(f, map_location=torch.device(device))
 	model = MeasurePredictor()
 	model.load_state_dict(s['model'])
 	model = model.to(device)
