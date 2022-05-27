@@ -90,8 +90,8 @@ if __name__ == "__main__":
 	
 	losses: List[Tuple[int, float, float]] = []
 	for n_epochs in range(args.epochs):
-		train_dl = DataLoader(train_ds, batch_size=64, shuffle=True)
-		test_dl = DataLoader(test_ds, batch_size=64, shuffle=True)
+		train_dl = DataLoader(train_ds, batch_size=1, shuffle=True)
+		test_dl = DataLoader(test_ds, batch_size=1, shuffle=True)
 
 		train_losses = []
 		for x, y in enumerate(train_dl):
