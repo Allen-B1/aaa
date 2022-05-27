@@ -104,10 +104,11 @@ if __name__ == "__main__":
 		train_dl = DataLoader(train_ds, batch_size=1, shuffle=True)
 		test_dl = DataLoader(test_ds, batch_size=1, shuffle=True)
 
+		model.train()
 		train_losses = []
 		for x, y in train_dl:
-			x = torch.squeeze(x)
-			y = torch.squeeze(y)
+			x = torch.squeeze(x).to(device)
+			y = torch.squeeze(y).to(device)
 			pred = model(x)
 			loss = F.mse_loss(pred, y)
 
@@ -117,10 +118,11 @@ if __name__ == "__main__":
 
 			train_losses.append(loss.item())
 		
+		model.eval()
 		test_losses = []
 		for x, y in test_dl:
-			x = torch.squeeze(x)
-			y = torch.squeeze(y)
+			x = torch.squeeze(x).to(device)
+			y = torch.squeeze(y).to(device)
 			pred = model(x)
 			loss = F.mse_loss(pred, y)
 			test_losses.append(loss.item())
