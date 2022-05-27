@@ -33,7 +33,7 @@ class MeasurePredictor(nn.Module):
 	# input: tensor [49, 88]
 	# output: tensor [49, 88]
 	def predict(self, x: torch.Tensor, hidden: Union[Tuple[torch.Tensor, torch.Tensor], None]) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
-		x = self.flatten(x)
+		x = self.flatten(x.unsqueeze(0))
 		x = F.leaky_relu(self.dense(x))
 		x, hidden_ = self.lstm(x, hidden)
 		x = F.leaky_relu(x)

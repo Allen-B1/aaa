@@ -2,7 +2,7 @@ import utils
 import notes.mxl, notes.tensor, notes.midi
 from notes.note import *
 import argparse
-import os.path
+import os.path, os
 
 SAVE_FOLDER = "saves/convrnn/trial-3"
 
@@ -26,5 +26,10 @@ for i in range(args.measures):
     measures.append(notes.tensor.from_tensor(measure))
 
 piece = Piece(measures, parts=['piano'])
+
+try:
+    os.makedirs(SAVE_FOLDER + "/e%d/" % epoch)
+except FileExistsError: pass
+
 pm = notes.midi.to_midi(piece)
 pm.write(SAVE_FOLDER + "/e%d/" % epoch + os.path.splitext(os.path.basename(mxl_file))[0] + ".mid")
