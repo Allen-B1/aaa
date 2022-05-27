@@ -4,7 +4,7 @@ from notes.note import *
 import argparse
 import os.path
 
-SAVE_FOLDER = "saves/convrnn/trial-1"
+SAVE_FOLDER = "saves/convrnn/trial-2"
 
 parser = argparse.ArgumentParser()
 utils.add_musicxml(parser)
@@ -16,7 +16,7 @@ assert mxl_file is not None
 piece = notes.mxl.parse_file(mxl_file)
 
 import convrnn
-model, epoch = convrnn.load("saves/convrnn/trial-1/model-200.pt", "cpu")
+model, epoch = convrnn.load("saves/convrnn/trial-2/model-200.pt", "cpu")
 
 measure = notes.tensor.to_tensor(piece.measures[0])
 measures = [notes.tensor.from_tensor(measure)]

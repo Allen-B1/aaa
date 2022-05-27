@@ -13,28 +13,28 @@ from notes.note import Measure
 class MeasurePredictor(nn.Module):
 	def __init__(self):
 		nn.Module.__init__(self)
-		self.conv1 = nn.Conv2d(1, 8, (3, 3))
-		self.conv2 = nn.Conv2d(8, 4, (4, 4))
+		self.conv1 = nn.Conv2d(1, 6, (3, 3))
+		self.conv2 = nn.Conv2d(6, 3, (4, 4))
 		self.flatten = nn.Flatten()
-		self.dense = nn.Linear(4 * 44 * 83, 120)
-		self.lstm = nn.LSTM(input_size=120, hidden_size=120, batch_first=True)
-		self.dedense = nn.Linear(120, 4 * 44 * 83)
-		self.deflatten = nn.Unflatten(1, (4, 44, 83))
-		self.deconv1 = nn.ConvTranspose2d(4, 8, (4, 4))
-		self.deconv2 = nn.ConvTranspose2d(8, 1, (3, 3))
+		self.dense = nn.Linear(3*44*83 , 512)
+		self.lstm = nn.LSTM(input_size=512, hidden_size=512, batch_first=True)
+		self.dedense = nn.Linear(512, 3*44*83)
+		self.deflatten = nn.Unflatten(1, (3, 44, 83))
+		self.deconv1 = nn.ConvTranspose2d(3, 6, (4, 4))
+		self.deconv2 = nn.ConvTranspose2d(6, 1, (3, 3))
 
 	# input: tensor [-1, 49, 88]
 	# output: tensor [-1, 49, 88]
 	def forward(self, x: torch.Tensor) -> torch.Tensor:
 		x = torch.reshape(x, (-1, 1, 49, 88))
-		x = self.conv1(x)
-		x = self.conv2(x)
+		x = F.leaky_relu(self.conv1(x))
+		x = F.leaky_relu(self.conv2(x))
 		x = self.flatten(x)
-		x = self.dense(x)
+		x = F.leaky_relu(self.dense(x))
 		x, _ = self.lstm(x)
-		x = self.dedense(x)
+		x = F.leaky_relu(self.dedense(x))
 		x = self.deflatten(x)
-		x = self.deconv1(x)
+		x = F.leaky_relu(self.deconv1(x))
 		x = self.deconv2(x)
 		x = torch.reshape(x, (-1, 49, 88))
 		return x
@@ -44,14 +44,14 @@ class MeasurePredictor(nn.Module):
 	# output: tensor [49, 88]
 	def predict(self, x: torch.Tensor, hidden: Union[Tuple[torch.Tensor, torch.Tensor], None]) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
 		x = torch.reshape(x, (1, 1, 49, 88))
-		x = self.conv1(x)
-		x = self.conv2(x)
+		x = F.leaky_relu(self.conv1(x))
+		x = F.leaky_relu(self.conv2(x))
 		x = self.flatten(x)
-		x = self.dense(x)
+		x = F.leaky_relu(self.dense(x))
 		x, hidden_ = self.lstm(x, hidden)
-		x = self.dedense(x)
+		x = F.leaky_relu(self.dedense(x))
 		x = self.deflatten(x)
-		x = self.deconv1(x)
+		x = F.leaky_relu(self.deconv1(x))
 		x = self.deconv2(x)
 		x = torch.reshape(x, (49, 88))
 		return x, hidden_
@@ -69,7 +69,7 @@ def save(f: str, model: MeasurePredictor, epochs: int):
 		"epoch": epochs
 	}, f)
 
-SAVE_FOLDER = "saves/convrnn/trial-1"
+SAVE_FOLDER = "saves/convrnn/trial-2"
 
 if __name__ == "__main__":
 	import argparse
