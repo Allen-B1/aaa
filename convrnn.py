@@ -12,6 +12,7 @@ from notes.note import Measure
 
 class MeasurePredictor(nn.Module):
 	def __init__(self):
+		nn.Module.__init__(self)
 		self.conv1 = nn.Conv2d(1, 8, (3, 3))
 		self.conv2 = nn.Conv2d(8, 4, (4, 4))
 		self.flatten = nn.Flatten()
