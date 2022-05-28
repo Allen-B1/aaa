@@ -9,13 +9,13 @@ class MeasurePredictor(nn.Module):
         nn.Module.__init__(self)
 
         self.seq = nn.Sequential(
-            nn.Linear(120, 1024),
+            nn.Linear(120, 120),
             nn.LeakyReLU(),
-            nn.Linear(1024, 512),
+            nn.Linear(120, 120),
             nn.LeakyReLU(),
-            nn.Linear(512, 256),
+            nn.Linear(120, 120),
             nn.LeakyReLU(),
-            nn.Linear(256, 120),
+            nn.Linear(120, 120),
             nn.LeakyReLU(),
             nn.Linear(120, 120)
         )
