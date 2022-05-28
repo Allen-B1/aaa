@@ -8,15 +8,20 @@ class MeasurePredictor(nn.Module):
     def __init__(self):
         nn.Module.__init__(self)
 
-        self.layer1 = nn.Linear(120, 120)
-        self.layer2 = nn.Linear(120, 120)
-        self.layer3 = nn.Linear(120, 120)
+        self.seq = nn.Sequential([
+            nn.Linear(120, 1024),
+            nn.LeakyReLU(),
+            nn.Linear(1024, 512),
+            nn.LeakyReLU(),
+            nn.Linear(512, 256),
+            nn.LeakyReLU(),
+            nn.Linear(256, 120),
+            nn.LeakyReLU(),
+            nn.Linear(120, 120)
+        ])
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        return x
+        return self.seq(x)
 
     @staticmethod
     def load(f: str, device: str = "cuda") -> Tuple['MeasurePredictor', int, int]:
@@ -70,6 +75,7 @@ if __name__ == "__main__":
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
+    losses: List[Tuple[int, float, float]] = []
     for n_epoch in range(args.epochs):
         train_dl: DataLoader = DataLoader(train_ds, shuffle=True)
         test_dl: DataLoader = DataLoader(test_ds, shuffle=True)
@@ -104,6 +110,21 @@ if __name__ == "__main__":
         avg_test_loss = sum(test_losses) / len(test_losses)
         print("[E%d] Train: %f | Test: %f" % (n_epoch + initial_epoch +1, avg_train_loss, avg_test_loss))
 
+        losses.append((n_epoch + initial_epoch + 1, avg_train_loss, avg_test_loss))
+
     print("Trained " + str(args.epochs))
     model.save(SAVE_FOLDER + "/" + args.out_label + ".pt", initial_epoch + args.epochs, autoenc_version)
     print("Saved to " + args.out_label)
+
+    import os
+    try:
+        os.makedirs(SAVE_FOLDER + "/stats")
+    except FileExistsError: pass
+
+    import pandas
+    df = pandas.DataFrame({
+        "epoch": [t[0] for t in losses],
+        "loss": [t[1] for t in losses],
+        "test_loss": [t[2] for t in losses],
+    })
+    df.to_csv(SAVE_FOLDER + "/stats/epochs-%d-to-%d.csv" % (initial_epoch + 1, initial_epoch + args.epochs))
