@@ -77,8 +77,8 @@ if __name__ == "__main__":
 
     losses: List[Tuple[int, float, float]] = []
     for n_epoch in range(args.epochs):
-        train_dl: DataLoader = DataLoader(train_ds, shuffle=True)
-        test_dl: DataLoader = DataLoader(test_ds, shuffle=True)
+        train_dl: DataLoader = DataLoader(train_ds, shuffle=True, batch_size=64)
+        test_dl: DataLoader = DataLoader(test_ds, shuffle=True, batch_size=64)
 
         x: torch.Tensor
         y: torch.Tensor
