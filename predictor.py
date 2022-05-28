@@ -8,7 +8,7 @@ class MeasurePredictor(nn.Module):
     def __init__(self):
         nn.Module.__init__(self)
 
-        self.seq = nn.Sequential([
+        self.seq = nn.Sequential(
             nn.Linear(120, 1024),
             nn.LeakyReLU(),
             nn.Linear(1024, 512),
@@ -18,7 +18,7 @@ class MeasurePredictor(nn.Module):
             nn.Linear(256, 120),
             nn.LeakyReLU(),
             nn.Linear(120, 120)
-        ])
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.seq(x)
