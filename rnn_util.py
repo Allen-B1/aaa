@@ -7,7 +7,7 @@ import notes.mxl, notes.tensor, notes.midi
 import os.path
 
 AUTOENC_MODEL = "saves/autoenc/trial-13/model-2000.pt"
-RNN_SAVE_FOLDER = "saves/rnn/trial-2"
+RNN_SAVE_FOLDER = "saves/rnn/trial-3"
 RNN_MODEL = RNN_SAVE_FOLDER + "/model-50.pt"
 
 def get_mxl(args: argparse.Namespace) -> str:
