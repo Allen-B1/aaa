@@ -28,6 +28,7 @@ class MeasurePredictor(nn.Module):
         save = torch.load(f, map_location=torch.device(device))
         model = MeasurePredictor()
         model.load_state_dict(save['model'])
+        model.to(device)
         return model, save['epoch'], save['autoenc_version']
     
     def save(self, f: str, epoch: int, autoenc_version: int):
