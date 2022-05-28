@@ -7,7 +7,7 @@ import os.path, os
 SAVE_FOLDER = "saves/convrnn/trial-4"
 
 parser = argparse.ArgumentParser()
-utils.add_musicxml(parser)
+utils.add_musicxml_options(parser)
 parser.add_argument("--measures", type=int, help="Number of measures to generate", default=16)
 args = parser.parse_args()
 
@@ -31,5 +31,6 @@ try:
     os.makedirs(SAVE_FOLDER + "/e%d/" % epoch)
 except FileExistsError: pass
 
-pm = notes.midi.to_midi(piece)
-pm.write(SAVE_FOLDER + "/e%d/" % epoch + os.path.splitext(os.path.basename(mxl_file))[0] + ".mid")
+import pickle
+with open(SAVE_FOLDER + "/e%d/" % epoch +  os.path.splitext(os.path.basename(mxl_file))[0] + ".msk", "wb") as f:
+    pickle.dump(piece, f)
