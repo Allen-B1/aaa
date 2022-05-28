@@ -15,7 +15,6 @@ class MeasurePredictor(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.dense1(x)
         x, _ = self.lstm(x)
-        x = self.dense1(x)
         x = self.hidden2next(x)
         return x
     
