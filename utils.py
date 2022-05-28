@@ -22,7 +22,7 @@ if __name__ == "__main__":
         mxl_path = get_musicxml(args)
         assert mxl_path is not None
         piece = notes.mxl.parse_file(mxl_path)
-        with open(args.out if args.out is not None else ("output/" + os.path.splitext(os.path.basename(mxl_path))[0] + ".msk"), "wb") as f:
+        with open(args.out if args.out is not None else ("out/" + os.path.splitext(os.path.basename(mxl_path))[0] + ".msk"), "wb") as f:
             pickle.dump(piece, f)
 
     def convert_to(args: argparse.Namespace): 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     to_parser = subcommands.add_parser("to")
     to_parser.add_argument("--file", help="MSK file to convert from", required=True)
-    from_parser.add_argument("--out", help="Output file", type=str, required=True)
+    to_parser.add_argument("--out", help="Output file", type=str, required=True)
     to_parser.set_defaults(func=convert_to)
 
     args = parser.parse_args()

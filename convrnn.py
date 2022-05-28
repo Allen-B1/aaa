@@ -114,7 +114,17 @@ if __name__ == "__main__":
 			optimizer.step()
 
 			train_losses.append(loss.item())
+
+			pred_x = pred[:len(pred)-1].clone().detach()
+			pred_y = y[1:]
+
+			pred2 = model(pred_x)
+			loss = F.mse_loss(pred2, pred_y)
 		
+			optimizer.zero_grad()
+			loss.backward()
+			optimizer.step()
+
 		model.eval()
 		test_losses = []
 		for x, y in test_dl:
