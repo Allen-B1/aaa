@@ -47,7 +47,7 @@ class MeasurePredictorDataset(Dataset):
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
         return self.measures[idx][0], self.measures[idx][1]
 
-SAVE_FOLDER = "saves/predictor/trial-2"
+SAVE_FOLDER = "saves/predictor/trial-3"
 
 if __name__ == "__main__":
     import argparse
