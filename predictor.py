@@ -56,7 +56,7 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, help="Number of epochs to train (default: 1)", default=1)
     parser.add_argument("--in-label", type=str, help="Model label to resume from", default=None)
     parser.add_argument("--out-label", type=str, help="Model label to write to", required=True)
-    parser.add_argument("--learning-rate", type=float, help="Learning rate of Adam optimizer", default=1e-3)
+    parser.add_argument("--learning-rate", type=float, help="Learning rate of Adam optimizer", default=1e-4)
     args = parser.parse_args()
 
     import rnn_preprocess
