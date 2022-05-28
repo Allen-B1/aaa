@@ -13,11 +13,14 @@ class MeasurePredictor(nn.Module):
         self.hidden2next = nn.Linear(512, 120)
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.dense1(x)
         x, _ = self.lstm(x)
+        x = self.dense1(x)
         x = self.hidden2next(x)
         return x
     
     def predict(self, x: torch.Tensor, hidden: Union[Tuple[torch.Tensor, torch.Tensor], None]) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+        x = self.dense1(x)
         x, hidden2 = self.lstm(x.unsqueeze(0), hidden)
         x = self.hidden2next(x)
         return x, hidden2
