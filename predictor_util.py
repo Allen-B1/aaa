@@ -7,8 +7,8 @@ import notes.mxl, notes.tensor, notes.midi
 import os.path
 
 AUTOENC_MODEL = "saves/autoenc/trial-13/model-2000.pt"
-PREDICTOR_SAVE_FOLDER = "saves/predictor"
-PREDICTOR_MODEL = PREDICTOR_SAVE_FOLDER + "/model-5.pt"
+PREDICTOR_SAVE_FOLDER = "saves/predictor/trial-3"
+PREDICTOR_MODEL = PREDICTOR_SAVE_FOLDER + "/model-5000.pt"
 
 def get_mxl(args: argparse.Namespace) -> str:
     if 'piece' in vars(args):

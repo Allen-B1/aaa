@@ -9,7 +9,7 @@ import random
 import time
 import os
 
-VERSION = 13
+VERSION = 14
 SAVE_FOLDER = "saves/autoenc/trial-" + str(VERSION)
 
 class AutoEncoder(nn.Module, ABC):
@@ -21,6 +21,53 @@ class AutoEncoder(nn.Module, ABC):
     def forward(self, x: torch.Tensor) -> torch.Tensor: pass
     @abstractmethod
     def version(self) -> int: pass
+
+class AutoEncoderV14(AutoEncoder):
+    def __init__(self):
+        nn.Module.__init__(self)
+
+        # [49, 88]
+        # (48/4, 8) ; (48/12, 1)
+        self.conv1 = nn.Conv2d(1, 8, (3, 3))
+        self.conv2 = nn.Conv2d(8, 4, (4, 4))
+        self.flatten = nn.Flatten()
+        self.dense = nn.Linear(4 * 44 * 83, 72)
+        self.dedense = nn.Linear(72, 4 * 44 * 83)
+        self.deflatten = nn.Unflatten(1, (4, 44, 83))
+        self.deconv1 = nn.ConvTranspose2d(4, 8, (4, 4))
+        self.deconv2 = nn.ConvTranspose2d(8, 1, (3, 3))
+
+    def encode(self, x: torch.Tensor) -> torch.Tensor:
+        x = x.unsqueeze(1)
+        x = F.elu(self.conv1(x))
+#        print(x.shape)
+        x = F.elu(self.conv2(x))
+#        print(x.shape)
+        x = self.flatten(x)
+        x = torch.sigmoid(self.dense(x))
+#        print(x.shape)
+        return x
+    
+    def decode(self, x: torch.Tensor) -> torch.Tensor:
+        x = F.elu(self.dedense(x))
+#        print(x.shape)
+        x = self.deflatten(x)
+        x = F.elu(self.deconv1(x))
+#        print(x.shape)
+        x = self.deconv2(x)
+#        print(x.shape)
+        return x
+    
+    def decode_regularize(self, x: torch.Tensor) -> torch.Tensor:
+        return F.relu(self.decode(x))
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.encode(x)
+        x = self.decode(x)
+        return x
+
+    def version(self) -> int:
+        return 14
 
 class AutoEncoderV13(AutoEncoder):
     def __init__(self):
@@ -191,6 +238,8 @@ def new_version(version: int) -> AutoEncoder:
         return AutoEncoderV12()
     elif version == 13:
         return AutoEncoderV13()
+    elif version == 14:
+        return AutoEncoderV14()
     else:
         raise Exception("unknown autoencoder version")
 
