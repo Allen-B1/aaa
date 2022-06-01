@@ -8,7 +8,7 @@ import os.path
 
 AUTOENC_MODEL = "saves/autoenc/trial-15/model-2000.pt"
 PREDICTOR_SAVE_FOLDER = "saves/predictor/trial-5"
-PREDICTOR_MODEL = PREDICTOR_SAVE_FOLDER + "/model-2000.pt"
+PREDICTOR_MODEL = PREDICTOR_SAVE_FOLDER + "/model-1000.pt"
 
 def get_mxl(args: argparse.Namespace) -> str:
     if 'piece' in vars(args):

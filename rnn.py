@@ -5,6 +5,9 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 import rnn_preprocess
 
+AUTOENC_MODEL = "saves/autoenc/trial-15/model-2000.pt"
+SAVE_FOLDER = "saves/rnn/trial-5"
+
 class MeasurePredictor(nn.Module):
     def __init__(self):
         nn.Module.__init__(self)
@@ -51,8 +54,6 @@ class MeasurePredictorDataset(Dataset):
         piece = self.pieces[idx]
         return piece[:len(piece)-1], piece[1:]
 
-SAVE_FOLDER = "saves/rnn/trial-4"
-
 if __name__ == "__main__":
     import os
     try:
@@ -67,6 +68,9 @@ if __name__ == "__main__":
     parser.add_argument("--learning-rate", type=float, help="Learning rate of Adam optimizer", default=1e-3)
     args = parser.parse_args()
 
+    import autoenc
+    autoenc_model, epochs = autoenc.load(AUTOENC_MODEL)
+    autoenc_model.requires_grad_(False)
 
     pieces, autoenc_version = rnn_preprocess.load("saves/preprocessed-rnn.pt")
     train_ds = MeasurePredictorDataset([piece for i, piece in enumerate(pieces) if i % 11 != 1])
@@ -97,7 +101,11 @@ if __name__ == "__main__":
             x = x.to("cuda")
             y = y.to("cuda")
             pred = model(x)
-            loss = F.mse_loss(pred, y)
+
+            y_measures = autoenc_model.decode_regularize(y)
+            pred_measures = autoenc_model.decode_regularize(pred)
+
+            loss = F.mse_loss(pred_measures, y_measures)
 
             optimizer.zero_grad()
             loss.backward()
@@ -111,7 +119,11 @@ if __name__ == "__main__":
             x = x.to("cuda")
             y = y.to("cuda")
             pred = model(x)
-            loss = F.mse_loss(pred, y)
+
+            y_measures = autoenc_model.decode_regularize(y)
+            pred_measures = autoenc_model.decode_regularize(pred)
+
+            loss = F.mse_loss(pred_measures, y_measures)
             test_losses.append(loss.item())
 
         avg_train_loss = sum(train_losses) / len(train_losses)
