@@ -58,7 +58,7 @@ if args.action == "gen-file":
         pm.write(SAVE_FOLDER + "/e%d/from/" % epoch + input_basename + ".mid")
 
 elif args.action == "gen-rand":
-    code = torch.rand(args.measures, 72)
+    code = torch.rand(args.measures, 120)
     code = torch.sigmoid(code)
     measures_tensor = torch.reshape(model.decode_regularize(code), (-1, 49, 88))
     measures = [notes.tensor.from_tensor(measure_tensor) for measure_tensor in measures_tensor]
