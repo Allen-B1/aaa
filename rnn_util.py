@@ -5,9 +5,10 @@ import argparse
 from notes.note import *
 import notes.mxl, notes.tensor, notes.midi
 import os.path
+import pretty_midi
 
-AUTOENC_MODEL = "saves/autoenc/trial-13/model-2000.pt"
-RNN_SAVE_FOLDER = "saves/rnn/trial-3"
+AUTOENC_MODEL = "saves/autoenc/trial-15/model-2000.pt"
+RNN_SAVE_FOLDER = "saves/rnn/trial-4"
 RNN_MODEL = RNN_SAVE_FOLDER + "/model-50.pt"
 
 def get_mxl(args: argparse.Namespace) -> str:
@@ -40,6 +41,7 @@ def gen_file(args: argparse.Namespace):
     measures = [notes.tensor.from_tensor(measure[0]) for measure in measures_tensor]
     piece = Piece(measures, parts=["piano"])
     pm = notes.midi.to_midi(piece)
+    pm.lyrics.append(pretty_midi.Lyric("Epoch " + str(rnn_epochs), 0))
     pm.write(RNN_SAVE_FOLDER + "/" + os.path.splitext(os.path.basename(mxl))[0] + ".mid")
 
 parser = argparse.ArgumentParser()
