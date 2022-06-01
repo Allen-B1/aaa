@@ -9,7 +9,7 @@ import random
 import time
 import os
 
-VERSION = 14
+VERSION = 15
 SAVE_FOLDER = "saves/autoenc/trial-" + str(VERSION)
 
 class AutoEncoder(nn.Module, ABC):
