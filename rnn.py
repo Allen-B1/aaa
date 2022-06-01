@@ -76,6 +76,7 @@ if __name__ == "__main__":
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
+    losses: List[Tuple[int, float, float]] = []
     for n_epoch in range(args.epochs):
         train_dl: DataLoader = DataLoader(train_ds, shuffle=True)
         test_dl: DataLoader = DataLoader(test_ds, shuffle=True)
@@ -109,7 +110,17 @@ if __name__ == "__main__":
         avg_train_loss = sum(train_losses) / len(train_losses)
         avg_test_loss = sum(test_losses) / len(test_losses)
         print("[E%d] Train: %f | Test: %f" % (n_epoch + initial_epoch +1, avg_train_loss, avg_test_loss))
+        losses.append((n_epoch + initial_epoch + 1, avg_train_loss, avg_test_loss))
 
     print("Trained " + str(args.epochs))
     model.save(SAVE_FOLDER + "/" + args.out_label + ".pt", initial_epoch + args.epochs, autoenc_version)
     print("Saved to " + args.out_label)
+
+    import pandas
+    epochs = list(map(lambda t: t[0], losses))
+    train_losses = list(map(lambda t: t[1], losses))
+    test_losses = list(map(lambda t: t[2], losses))
+    df = pandas.DataFrame({"epoch": epochs, "loss": train_losses, "test_loss": test_losses})
+    df.set_index("epoch")
+    multi_csv_file = "/stats/epochs-" + str(initial_epoch + 1) + "-to-" + str(initial_epoch + args.epochs) + ".csv"
+    df.to_csv(SAVE_FOLDER + multi_csv_file)
