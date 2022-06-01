@@ -102,8 +102,8 @@ if __name__ == "__main__":
             y = y.to("cuda")
             pred = model(x)
 
-            y_measures = autoenc_model.decode_regularize(y)
-            pred_measures = autoenc_model.decode_regularize(pred)
+            y_measures = autoenc_model.decode_regularize(y.squeeze())
+            pred_measures = autoenc_model.decode_regularize(pred.squeeze())
 
             loss = F.mse_loss(pred_measures, y_measures)
 
@@ -120,8 +120,8 @@ if __name__ == "__main__":
             y = y.to("cuda")
             pred = model(x)
 
-            y_measures = autoenc_model.decode_regularize(y)
-            pred_measures = autoenc_model.decode_regularize(pred)
+            y_measures = autoenc_model.decode_regularize(y.squeeze())
+            pred_measures = autoenc_model.decode_regularize(pred.squeeze())
 
             loss = F.mse_loss(pred_measures, y_measures)
             test_losses.append(loss.item())
