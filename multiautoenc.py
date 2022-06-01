@@ -8,6 +8,8 @@ SAVE_FOLDER = "saves/multiautoenc/trial-1"
 
 class MultiAutoEncoder(nn.Module):
     def __init__(self):
+        nn.Module.__init__(self)
+
         self.measure_encoder = nn.Sequential(
             nn.Conv2d(1, 8, (3, 3)),
             nn.ELU(),
@@ -26,11 +28,11 @@ class MultiAutoEncoder(nn.Module):
         )
 
         self.section_decoder = nn.Sequential(
-            nn.Linear(384, 96),
+            nn.Linear(96, 384),
             nn.ELU(), 
             nn.Linear(384, 120 * 16),
             nn.ELU(),
-            nn.Unflatten(1, (4, 120)),
+            nn.Unflatten(1, (16, 120)),
         )
 
         self.measure_decoder = nn.Sequential(
@@ -45,7 +47,7 @@ class MultiAutoEncoder(nn.Module):
         measure_codes = [self.measure_encoder(measure) for measure in measures]
         codes = self.section_encoder(torch.stack(measure_codes, dim=1))
         measure_codes = self.section_decoder(codes)
-        return torch.stack([self.measure_decoder(codes) for codes in torch.split(measure_codes, 1, dim=1)])
+        return torch.stack([self.measure_decoder(codes.squeeze(1)) for codes in torch.split(measure_codes, 1, dim=1)], dim=1).squeeze(2)
 
 def load(file: str, device:str='cuda') -> Tuple[MultiAutoEncoder, int]:
     save = torch.load(file, map_location=torch.device(device))
@@ -72,7 +74,7 @@ if __name__ == "__main__":
         def __init__(self, split: str):
             self.data = preprocess.load("saves/preprocessed.pt")
             filter = (lambda x: x % 11 != 0) if split == "train" else (lambda x: x % 11 == 0)
-            self.data = [(a, b, c, torch.stack([piece[i:i+16] for i in range(len(piece)-15)])) for (a, b, c, piece) in self.data]
+            self.data = [(a, b, c, piece[i:i+16]) for (a, b, c, piece) in self.data for i in range(len(piece)-15)]
 
         def __len__(self) -> int:
             return len(self.data)
@@ -106,9 +108,9 @@ if __name__ == "__main__":
 
         train_losses:  List[float] = []
         for measure_sets in train_dl:
-            print(measure_sets.shape)
+#            print(measure_sets.shape)
             pred = model(measure_sets)
-            print(pred.shape)
+#            print(pred.shape)
             loss = F.mse_loss(pred, measure_sets)
 
             optimizer.zero_grad()
@@ -119,9 +121,9 @@ if __name__ == "__main__":
 
         test_losses: List[float] = []
         for measure_sets in test_dl:
-            print(measure_sets.shape)
+#            print(measure_sets.shape)
             pred = model(measure_sets)
-            print(pred.shape)
+#            print(pred.shape)
             loss = F.mse_loss(pred, measure_sets)
             test_losses.append(loss.item())
 
