@@ -8,9 +8,9 @@ import rnn_preprocess
 class MeasurePredictor(nn.Module):
     def __init__(self):
         nn.Module.__init__(self)
-        self.dense1 = nn.Linear(120, 512)
-        self.lstm = nn.LSTM(512, hidden_size=512, batch_first=True, num_layers=3)
-        self.hidden2next = nn.Linear(512, 120)
+        self.dense1 = nn.Linear(72, 120)
+        self.lstm = nn.LSTM(120, hidden_size=120, batch_first=True, num_layers=1)
+        self.hidden2next = nn.Linear(120, 72)
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.dense1(x)
