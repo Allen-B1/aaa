@@ -103,14 +103,14 @@ if __name__ == "__main__":
 
         losses.append((n_epoch + initial_epoch + 1, avg_train_loss, avg_test_loss))
 
-    print("Trained " + str(args.epochs))
-    model.save(SAVE_FOLDER + "/" + args.out_label + ".pt", initial_epoch + args.epochs, autoenc_version)
-    print("Saved to " + args.out_label)
-
     import os
     try:
         os.makedirs(SAVE_FOLDER + "/stats")
     except FileExistsError: pass
+
+    print("Trained " + str(args.epochs))
+    model.save(SAVE_FOLDER + "/" + args.out_label + ".pt", initial_epoch + args.epochs, autoenc_version)
+    print("Saved to " + args.out_label)
 
     import pandas
     df = pandas.DataFrame({
