@@ -22,6 +22,7 @@ class MeasurePredictor(nn.Module):
         x = self.dense1(x)
         x, hidden2 = self.lstm(x.unsqueeze(0), hidden)
         x = self.hidden2next(x)
+        x = x.detach()
         x.apply_(lambda x: max(min(x, 1), 0))
         return x, hidden2
 
