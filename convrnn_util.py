@@ -7,7 +7,11 @@ import os.path, os
 SAVE_FOLDER = "saves/convrnn/trial-4"
 
 parser = argparse.ArgumentParser()
+subcommands = parser.add_subparsers(metavar="ACTION", required=True)
+
+gen_file_parser = subcommands.add_parser("gen-file", help="generate based on first measure of file")
 utils.add_musicxml_options(parser)
+
 parser.add_argument("--measures", type=int, help="Number of measures to generate", default=16)
 args = parser.parse_args()
 

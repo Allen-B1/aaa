@@ -133,6 +133,8 @@ if __name__ == "__main__":
         print("[E%d] Train: %f | Test: %f" % (n_epoch + epoch_init +1, avg_train_loss, avg_test_loss))
         losses.append((n_epoch + epoch_init + 1, avg_train_loss, avg_test_loss))
 
+    save(model,  epoch_init + args.epochs, SAVE_FOLDER + "/" + args.out_label + ".pt")
+
     import pandas
     epochs = list(map(lambda t: t[0], losses))
     train_losses = list(map(lambda t: t[1], losses))
