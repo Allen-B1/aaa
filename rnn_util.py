@@ -59,7 +59,7 @@ def gen_rand(args: argparse.Namespace):
     utils.save_piece(piece, RNN_SAVE_FOLDER, None, rnn_epochs)
 
 parser = argparse.ArgumentParser()
-subcommands = parser.add_subparsers(help="possible commands", required=True)
+subcommands = parser.add_subparsers(metavar="ACTION", required=True)
 
 gen_file_subcommand = subcommands.add_parser("gen-file", help="generate from first measure of file")
 utils.add_musicxml_options(gen_file_subcommand)
