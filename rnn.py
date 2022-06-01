@@ -53,6 +53,11 @@ class MeasurePredictorDataset(Dataset):
 SAVE_FOLDER = "saves/rnn/trial-4"
 
 if __name__ == "__main__":
+    import os
+    try:
+        os.makedirs(SAVE_FOLDER + "/stats")
+    except FileExistsError: pass
+
     import argparse
     parser = argparse.ArgumentParser(description='Run the AutoEncoder')
     parser.add_argument("--epochs", type=int, help="Number of epochs to train (default: 1)", default=1)
