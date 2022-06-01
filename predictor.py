@@ -8,17 +8,7 @@ class MeasurePredictor(nn.Module):
     def __init__(self):
         nn.Module.__init__(self)
 
-        self.seq = nn.Sequential(
-            nn.Linear(120, 120),
-            nn.LeakyReLU(),
-            nn.Linear(120, 120),
-            nn.LeakyReLU(),
-            nn.Linear(120, 120),
-            nn.LeakyReLU(),
-            nn.Linear(120, 120),
-            nn.LeakyReLU(),
-            nn.Linear(120, 120)
-        )
+        self.seq = nn.Linear(120, 120)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.seq(x)
@@ -48,7 +38,7 @@ class MeasurePredictorDataset(Dataset):
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
         return self.measures[idx][0], self.measures[idx][1]
 
-SAVE_FOLDER = "saves/predictor/trial-3"
+SAVE_FOLDER = "saves/predictor/trial-4"
 
 if __name__ == "__main__":
     import argparse

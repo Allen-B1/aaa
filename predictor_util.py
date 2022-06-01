@@ -6,8 +6,8 @@ from notes.note import *
 import notes.mxl, notes.tensor, notes.midi
 import os.path
 
-AUTOENC_MODEL = "saves/autoenc/trial-13/model-2000.pt"
-PREDICTOR_SAVE_FOLDER = "saves/predictor/trial-3"
+AUTOENC_MODEL = "saves/autoenc/trial-15/model-2000.pt"
+PREDICTOR_SAVE_FOLDER = "saves/predictor/trial-4"
 PREDICTOR_MODEL = PREDICTOR_SAVE_FOLDER + "/model-5000.pt"
 
 def get_mxl(args: argparse.Namespace) -> str:
