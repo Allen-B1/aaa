@@ -107,7 +107,7 @@ if __name__ == "__main__":
         test_dl = DataLoader(test_ds, batch_size=64)
 
         train_losses:  List[float] = []
-        for measure_sets in train_dl:
+        for batch_num, measure_sets in enumerate(train_dl):
 #            print(measure_sets.shape)
             pred = model(measure_sets)
 #            print(pred.shape)
@@ -118,6 +118,7 @@ if __name__ == "__main__":
             optimizer.step()
 
             train_losses.append(loss.item())
+            print("[E%d]" % batch_num + " Train: %f" % loss.item(), end='\r')
 
         test_losses: List[float] = []
         for measure_sets in test_dl:
