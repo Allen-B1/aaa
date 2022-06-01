@@ -118,7 +118,7 @@ if __name__ == "__main__":
             optimizer.step()
 
             train_losses.append(loss.item())
-            print("[E%d]" % batch_num + " Train: %f" % loss.item(), end='\r')
+            print("[E%d][B%d]" % (n_epoch + epoch_init + 1, batch_num) + " Train: %f" % loss.item(), end='\r')
 
         test_losses: List[float] = []
         for measure_sets in test_dl:
