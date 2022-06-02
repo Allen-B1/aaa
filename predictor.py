@@ -41,7 +41,7 @@ class MeasurePredictorDataset(Dataset):
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
         return self.measures[idx][0], self.measures[idx][1]
 
-SAVE_FOLDER = "saves/predictor/trial-5"
+SAVE_FOLDER = "saves/predictor/trial-6"
 
 if __name__ == "__main__":
     import argparse
@@ -86,7 +86,7 @@ if __name__ == "__main__":
             x = x.to(device)
             y = y.to(device)
             pred = model(x)
-            loss = F.l1_loss(pred, y)
+            loss = F.mse_loss(autoenc_model(pred), autoenc_model(y))
 
             optimizer.zero_grad()
             loss.backward()
@@ -100,7 +100,7 @@ if __name__ == "__main__":
             x = x.to(device)
             y = y.to(device)
             pred = model(x)
-            loss = F.l1_loss(pred, y)
+            loss = F.mse_loss(autoenc_model(pred), autoenc_model(y))
             test_losses.append(loss.item())
 
         avg_train_loss = sum(train_losses) / len(train_losses)
