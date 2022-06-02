@@ -1,13 +1,15 @@
 import random
 import pretty_midi
+import mido
 
-from typing import Sequence
+from typing import Sequence, List
 from .note import Piece
 
 def to_midi(piece: Piece) -> pretty_midi.PrettyMIDI:
     # (beats/min * min/sec)^-1
 
-    midi = pretty_midi.PrettyMIDI(initial_tempo=piece.measures[0].tempo)
+    tempo = piece.measures[0].tempo
+    midi = pretty_midi.PrettyMIDI(initial_tempo=tempo)
     for part in piece.parts:
         program = pretty_midi.instrument_name_to_program('Acoustic Grand Piano' if part.lower() == 'piano' else part)
         instrument = pretty_midi.Instrument(program=program)
@@ -16,10 +18,11 @@ def to_midi(piece: Piece) -> pretty_midi.PrettyMIDI:
     current_time = 0.0
     for measure in piece.measures:
         tempo = measure.tempo
+        
         sec_per_beats = 1/(tempo * (1/60))
         midi.time_signature_changes.append(pretty_midi.TimeSignature(measure.time_sig[0], measure.time_sig[1], current_time))
         midi._tick_scales.append((midi.time_to_tick(current_time), 60.0/(tempo*midi.resolution)))
-        midi._update_tick_to_time(midi.time_to_tick(current_time*2))
+        midi._update_tick_to_time(midi.time_to_tick(current_time+5000))
         for part_id, part_notes in enumerate(measure.notes):
             for position, notes in part_notes.items():
                 note_time = current_time + position*sec_per_beats
