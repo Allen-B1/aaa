@@ -74,7 +74,7 @@ if __name__ == "__main__":
         def __init__(self, split: str):
             self.data = preprocess.load("saves/preprocessed.pt")
             filter = (lambda x: x % 11 != 0) if split == "train" else (lambda x: x % 11 == 0)
-            self.data = [(a, b, c, piece[i:i+16].to("cuda")) for (a, b, c, piece) in self.data for i in range(len(piece)-15)]
+            self.data = [(a, b, c, piece[i:i+16]) for (a, b, c, piece) in self.data for i in range(len(piece)-15)]
 
         def __len__(self) -> int:
             return len(self.data)
@@ -109,6 +109,7 @@ if __name__ == "__main__":
 
         train_losses:  List[float] = []
         for batch_num, measure_sets in enumerate(train_dl):
+            measure_sets = measure_sets.to("cuda")
 #            print(measure_sets.shape)
             pred = model(measure_sets)
 #            print(pred.shape)
@@ -123,6 +124,7 @@ if __name__ == "__main__":
 
         test_losses: List[float] = []
         for measure_sets in test_dl:
+            measure_sets = measure_sets.to("cuda")
 #            print(measure_sets.shape)
             pred = model(measure_sets)
 #            print(pred.shape)
