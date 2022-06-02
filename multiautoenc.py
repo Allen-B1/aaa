@@ -92,6 +92,7 @@ if __name__ == "__main__":
 
     if args.in_label is not None:
         model, epoch_init = load(SAVE_FOLDER + "/" + args.in_label + ".pt")
+        model = model.to("cuda")
         print("Loading: " + args.in_label)
         print("Epoch: " + str(epoch_init))
     else:
