@@ -3,17 +3,69 @@
     <head>
         <title>MG | Input</title>
         <script src="/static/abc.min.js"></script>
+        <link rel="stylesheet" href="/static/style.css">
+        <style>
+h1 {
+    text-align: center;
+}
+form {
+    height: 60vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    grid-template-rows: auto 1fr auto;
+    align-items: start;
+    justify-items: start;
+    row-gap: 8px;
+    column-gap: 8px;
+}
+
+#input-container {
+    grid-row: 2;
+    grid-column: 1 / span 2;
+    justify-self: stretch;
+    align-self: stretch;
+
+    display: flex;
+    flex-direction: column;
+}
+textarea {
+    flex-grow: 1;
+}
+
+#target {
+    grid-row: 1 / span 2;
+    grid-column: 3;
+}
+#buttons {
+    grid-row: 3;
+    grid-column: 1 / span 3;
+    text-align: center;
+    justify-self: center;
+    align-self: center;
+}
+        </style>
     </head>
     <body>
         <h1>Generate Music</h1>
-        <p>Enter one measure of music into the following textbox:</p>
         <form action="/process1" method="POST">
             <select name="model">
                 <option value="convrnn">RNN 1</option>
                 <option value="rnn">RNN 2 (Autoencoded)</option>
-            </select>
-            <input type="number" min="8" max="64" placeholder="Number of measures" name="measures" value="16" required>
-            <textarea name="abc" placeholder="Enter music in ABC notation" id="abc-input">
+            </select>    
+            <div style="justify-self: end">
+                <label for="measures">Measures</label>
+                <input id="measures" type="number" min="8" max="64" placeholder="Number" name="measures" value="16" required>
+            </div>
+            <div id="input-container">
+                <p>Enter one measure of music into the following textbox. A note has the following syntax: <code>[PITCH] [DURATION]</code>.<br />
+                    <strong>Pitch</strong>: An uppercase letter places the note in octave 5, a lowercase letter places the note in octave 4. To further increase the octave,
+                    place an apostrophe (<code>'</code>) after the letter; to further decrease the octave, use a comma (<code>,</code>). To denote a rest,
+                    use <code>z</code>. <br/>
+                    <strong>Duration</strong> Duration comes after pitch. A duration of <code>2</code> represents a half note, a duration of <code>4</code> represents a whole note.
+                    Likewise, a duration of <code>/2</code> represents a quarter note and a duration of <code>/4</code> represents a sixteenth note.
+                    <strong>Chords</strong> In place of a pitch, place brackets around a sequence of pitches.
+                </p>
+                <textarea name="abc" placeholder="Enter music in ABC notation" id="abc-input">
 X:1
 M:4/4
 L:1/4
@@ -27,9 +79,13 @@ V:3
 z z A,/2B,/4c,/4 G/2E/2 |
 V:4 clef=bass
 [a,,,e,,] [a,,,e,,]/2d,,/4c,,/4 [a,,,e,,] [b,,,e,,] |
-            </textarea>
+                </textarea>
+            </div>
+
             <div id="target"></div>
+            <div id="buttons">
             <button type="submit">Generate</button>
+            </div>
         </form>
 
         <script>

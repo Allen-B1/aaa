@@ -126,6 +126,7 @@ def orchestrate(piece: Piece) -> Piece:
         note_dict_1: DefaultDict[float, List[Note]] = defaultdict(list)
         note_dict_2: DefaultDict[float, List[Note]] = defaultdict(list)
         for i, voice in enumerate(voices_by_range[0]):
+            if i > 4: break
             for position, note in voice:
                 if current_position <= position and position < current_position + measure.beats():
                     if i % 2 == 0:
@@ -137,6 +138,7 @@ def orchestrate(piece: Piece) -> Piece:
         for voices in voices_by_range[1:]: # viola, cello
             note_dict = defaultdict(list)
             for i, voice in enumerate(voices):
+                if i > 2: break
                 for position, note in voice:
                     if current_position <= position and position < current_position + measure.beats():
                         note_dict[position - current_position].append(note)

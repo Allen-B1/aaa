@@ -1,0 +1,30 @@
+body {
+    font-family: sans-serif;
+    color: #111;
+}
+textarea {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+button, .button, select {
+    text-align: center;
+    padding: 8px 16px;
+    background: hsl(45, 100%, 50%);
+    color: #111;
+    text-decoration: none;
+    font-family: sans-serif;
+    font-size: 14px;
+    border: 0;
+    cursor: pointer;
+}
+
+input {
+    border: 0;
+    border-bottom: 2px solid hsl(45, 100%, 50%);
+    color: #111;
+    font-size: 14px;
+    padding: 4px 8px;
+}
+input:invalid, textarea:invalid {
+    border-color: hsl(2, 90%, 50%);
+}

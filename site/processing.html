@@ -2,10 +2,18 @@
 <html lang="en">
     <head>
         <title>MG | Processing</title>
+        <link rel="stylesheet" href="/static/style.css">
     </head>
     <body>
         Generating...
+        <progress id="progress" value="0" max="100"></progress>
         <script>
+let progress = document.getElementById("progress");
+setInterval(function() {
+    if (progress.value < 95)
+        progress.value += 1;
+}, 120)
+
 location.href = "/process2/{{id}}"; 
         </script>
     </body>
