@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>MG | Input</title>
+        <script src="/static/abc.min.js"></script>
+    </head>
+    <body>
+        <h1>Generate Music</h1>
+        <p>Enter one measure of music into the following textbox:</p>
+        <form action="/process1" method="POST">
+            <select name="model">
+                <option value="convrnn">RNN 1</option>
+                <option value="rnn">RNN 2 (Autoencoded)</option>
+            </select>
+            <input type="number" min="8" max="64" placeholder="Number of measures" name="measures" value="16" required>
+            <textarea name="abc" placeholder="Enter music in ABC notation" id="abc-input">
+X:1
+M:4/4
+L:1/4
+T:Example Measure
+K:A
+V:1 clef=treble
+[ac'e'a']2 [gc'e'g'] [be'g'b'] |
+V:2
+A/2B/4c/4 f/2d/2 a g/2e/2 |
+V:3
+z z A,/2B,/4c,/4 G/2E/2 |
+V:4 clef=bass
+[a,,,e,,] [a,,,e,,]/2d,,/4c,,/4 [a,,,e,,] [b,,,e,,] |
+            </textarea>
+            <div id="target"></div>
+            <button type="submit">Generate</button>
+        </form>
+
+        <script>
+let inputElem = document.getElementById("abc-input");
+ABCJS.renderAbc("target", inputElem.value);
+inputElem.addEventListener("input", function() {
+    ABCJS.renderAbc("target", this.value);
+});
+        </script>
+    </body>
+</html>

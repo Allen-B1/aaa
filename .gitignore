@@ -4,3 +4,6 @@ datasets
 .ipynb_checkpoints
 saves
 tests/output
+site/static/output
+out
+tests/*.musicxml
