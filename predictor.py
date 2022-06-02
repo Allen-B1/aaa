@@ -3,6 +3,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
+import autoenc
+
+AUTOENC_MODEL = "saves/autoenc/trial-15/model-2000.pt"
 
 class MeasurePredictor(nn.Module):
     def __init__(self):
@@ -48,6 +51,9 @@ if __name__ == "__main__":
     parser.add_argument("--out-label", type=str, help="Model label to write to", required=True)
     parser.add_argument("--learning-rate", type=float, help="Learning rate of Adam optimizer", default=1e-4)
     args = parser.parse_args()
+
+    autoenc_model, epochs = autoenc.load(AUTOENC_MODEL)
+    autoenc_model.requires_grad_(False)
 
     import rnn_preprocess
     pieces, autoenc_version = rnn_preprocess.load("saves/preprocessed-rnn.pt")
