@@ -3,16 +3,45 @@
     <head>
         <title>MG | Processing</title>
         <link rel="stylesheet" href="/static/style.css">
+        <style>
+            div, progress {
+                text-align: center;
+            }
+
+            progress {
+                border: 0;
+                background-color: hsl(0, 0%, 75%);
+                width: 768px;
+                height: 16px;
+                margin: auto;
+                display: block;
+                margin-top: 32px;
+            }
+            progress:-webkit-progress-bar {
+                background-color: hsl(0, 0%, 75%);
+            }
+            progress::-moz-progress-bar {
+                background-color: hsl(45, 100%, 50%);
+            }
+
+            progress::-webkit-progress-value {
+                background-color: hsl(45, 100%, 50%);
+            }
+
+            div {
+                margin-top: 320px;
+            }
+        </style>
     </head>
     <body>
-        Generating...
+        <div style="font-size:48px">Rendering</div>
         <progress id="progress" value="0" max="100"></progress>
         <script>
 let progress = document.getElementById("progress");
 setInterval(function() {
-    if (progress.value < 95)
-        progress.value += 1;
-}, 120)
+    if (progress.value < 99)
+        progress.value += 0.5;
+}, 50);
 
 location.href = "/process2/{{id}}"; 
         </script>
