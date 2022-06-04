@@ -45,7 +45,7 @@ SAVE_FOLDER = "saves/predictor/trial-6"
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description='Run the AutoEncoder')
+    parser = argparse.ArgumentParser(description='Run the Predictor')
     parser.add_argument("--epochs", type=int, help="Number of epochs to train (default: 1)", default=1)
     parser.add_argument("--in-label", type=str, help="Model label to resume from", default=None)
     parser.add_argument("--out-label", type=str, help="Model label to write to", required=True)

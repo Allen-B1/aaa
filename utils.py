@@ -1,6 +1,8 @@
 import argparse
 import random
-from typing import Union
+from typing import Mapping, Union
+
+import torch
 from notes.note import Piece
 import pickle
 import notes.midi
