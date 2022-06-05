@@ -101,6 +101,8 @@ if __name__ == "__main__":
 
         test_losses: List[float] = []
         for x, y in test_dl:
+            x = x.unsqueeze(1)
+            y = y.unsqueeze(1)
             pred = model(x)
             loss = F.mse_loss(pred, y)
             test_losses.append(float(loss.item()))
