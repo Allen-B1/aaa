@@ -19,7 +19,11 @@ class MeasurePredictor(nn.Module):
             nn.ELU(),
         )
         self.flatten = nn.Flatten()
-        self.dense = nn.Linear(32*47*20, 32*21*40)
+        self.dense = nn.Sequential(
+            nn.Linear(32*47*20, 256),
+            nn.ELU(),
+            nn.Linear(256, 32*21*40)
+        )
         self.unflatten = nn.Unflatten(1, (32, 21, 40))
         self.deconv = nn.Sequential(
             nn.ConvTranspose2d(32, 32, (4, 4),  stride=(2,2), output_padding=(0, 1)),
