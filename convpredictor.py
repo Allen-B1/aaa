@@ -1,3 +1,4 @@
+import itertools
 from re import M
 from typing import List, Tuple
 import torch
@@ -48,21 +49,21 @@ if __name__ == "__main__":
     parser.add_argument("--learning-rate", type=float, help="Learning rate of Adam optimizer", default=1e-4)
     args = parser.parse_args()
 
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
     from torch.utils.data import Dataset, DataLoader
     class MeasuresDataset(Dataset):
         def __init__(self, split: str):
             import preprocess
             pieces = preprocess.load("saves/preprocessed.pt")
             f = (lambda x: x % 11 != 0) if split == "train" else (lambda x: x % 11 == 0)
-            self.measures = [(torch.cat((piece[i], piece[i+1], piece[i+2], piece[i+3])), piece[i+4]) for a, b, c, piece in pieces for i in range(len(piece)-5) if f(i)]
-
+            self.measures = [(torch.cat((piece[i], piece[i+1], piece[i+2], piece[i+3])), piece[i+4]) for a, b, c, piece_ in pieces for piece in [piece_.to(device)] for i in range(len(piece)-5) if f(i)]
         def __len__(self) -> int:
             return len(self.measures)
         
         def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
             return self.measures[idx]
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     if args.in_label is not None:
         model, initial_epoch = utilst.load_model(SAVE_FOLDER, args.in_label, MeasurePredictor(), device=device)
