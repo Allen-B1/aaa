@@ -33,6 +33,11 @@ def print_loss(loss: Loss):
     print("[E%d] Train: %f | Test: %f" % (loss.epoch, loss.train_loss, loss.test_loss))
 
 def save_losses(stats_folder: str, losses: Losses):
+    try:
+        os.makedirs(stats_folder)
+    except FileExistsError: pass
+
+
     losses = list(losses)
     losses.sort(key=lambda t: t.epoch)
     df = pandas.DataFrame({
