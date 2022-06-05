@@ -89,7 +89,7 @@ if __name__ == "__main__":
             x = x.unsqueeze(1)
             y = y.unsqueeze(1)
             pred = model(x)
-            print(pred.shape)
+#            print(pred.shape)
             assert pred.shape == y.shape
             loss = F.mse_loss(pred, y)
             
